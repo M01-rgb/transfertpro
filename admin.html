@@ -471,6 +471,19 @@
                             <input type="text" id="worker-code" required placeholder="Code unique (ex: TRV001)">
                         </div>
                     </div>
+                    
+                    <!-- AJOUT : Adresse et téléphone du travailleur -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="worker-address">Adresse du travailleur</label>
+                            <input type="text" id="worker-address" required placeholder="Adresse du travailleur">
+                        </div>
+                        <div class="form-group">
+                            <label for="worker-phone">Téléphone du travailleur</label>
+                            <input type="text" id="worker-phone" required placeholder="Téléphone du travailleur">
+                        </div>
+                    </div>
+                    
                     <button type="submit" class="btn-primary">
                         <i class="fas fa-user-plus"></i> Ajouter le Travailleur
                     </button>
@@ -489,6 +502,8 @@
                         <tr>
                             <th>Nom</th>
                             <th>Code</th>
+                            <th>Adresse</th>
+                            <th>Téléphone</th>
                             <th>Transferts</th>
                             <th>Actions</th>
                         </tr>
@@ -511,12 +526,12 @@
                 </div>
                 <form id="settings-form">
                     <div class="form-group">
-                        <label for="office-address">Adresse du bureau</label>
-                        <textarea id="office-address" rows="3" required placeholder="Adresse complète du bureau"></textarea>
+                        <label for="office-address">Adresse du bureau principal</label>
+                        <textarea id="office-address" rows="3" required placeholder="Adresse complète du bureau principal"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="office-phone">Téléphone du bureau</label>
-                        <input type="text" id="office-phone" required placeholder="Numéro de téléphone">
+                        <label for="office-phone">Téléphone du bureau principal</label>
+                        <input type="text" id="office-phone" required placeholder="Numéro de téléphone principal">
                     </div>
                     <button type="submit" class="btn-primary">
                         <i class="fas fa-save"></i> Enregistrer les Paramètres
@@ -623,9 +638,27 @@
         let workers = JSON.parse(localStorage.getItem('workers')) || [];
         if (workers.length === 0) {
             workers = [
-                { name: "Jean Pierre", code: "TRV001", transactions: 0 },
-                { name: "Marie Laurent", code: "TRV002", transactions: 0 },
-                { name: "Carlos Rodriguez", code: "TRV003", transactions: 0 }
+                { 
+                    name: "Jean Pierre", 
+                    code: "TRV001", 
+                    address: "Bureau Principal - Av. John F. Kennedy, Santo Domingo",
+                    phone: "+1 809 123 4567",
+                    transactions: 0 
+                },
+                { 
+                    name: "Marie Laurent", 
+                    code: "TRV002", 
+                    address: "Bureau Centre-Ville - Rue du Commerce, Port-au-Prince",
+                    phone: "+1 809 123 4568",
+                    transactions: 0 
+                },
+                { 
+                    name: "Carlos Rodriguez", 
+                    code: "TRV003", 
+                    address: "Bureau Ouest - Av. des Héros, Santiago",
+                    phone: "+1 809 123 4569",
+                    transactions: 0 
+                }
             ];
             localStorage.setItem('workers', JSON.stringify(workers));
         }
@@ -751,7 +784,7 @@
             const currentWorkers = JSON.parse(localStorage.getItem('workers')) || [];
 
             if (currentWorkers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Aucun travailleur</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Aucun travailleur</td></tr>';
                 return;
             }
 
@@ -759,9 +792,12 @@
                 const workerTransactions = transactions.filter(t => t.workerCode === worker.code).length;
                 const row = document.createElement('tr');
                 
+                // AJOUT : Affichage de l'adresse et téléphone
                 row.innerHTML = `
                     <td>${worker.name}</td>
                     <td>${worker.code}</td>
+                    <td>${worker.address || 'Non défini'}</td>
+                    <td>${worker.phone || 'Non défini'}</td>
                     <td>${workerTransactions}</td>
                     <td>
                         <button class="btn btn-danger delete-worker" data-code="${worker.code}">
@@ -798,6 +834,8 @@
             e.preventDefault();
             const name = document.getElementById('worker-name').value.trim();
             const code = document.getElementById('worker-code').value.trim().toUpperCase();
+            const address = document.getElementById('worker-address').value.trim();
+            const phone = document.getElementById('worker-phone').value.trim();
 
             // Vérifier si le code existe déjà
             if (workers.find(w => w.code === code)) {
@@ -805,10 +843,12 @@
                 return;
             }
 
-            // CORRECTION : Ajouter le travailleur avec la structure correcte
+            // AJOUT : Structure complète du travailleur
             const newWorker = {
                 name: name,
                 code: code,
+                address: address,
+                phone: phone,
                 transactions: 0
             };
             
