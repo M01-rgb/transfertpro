@@ -384,9 +384,27 @@
             const workers = JSON.parse(localStorage.getItem('workers')) || [];
             if (workers.length === 0) {
                 const defaultWorkers = [
-                    { name: "Jean Pierre", code: "TRV001", transactions: 0 },
-                    { name: "Marie Laurent", code: "TRV002", transactions: 0 },
-                    { name: "Carlos Rodriguez", code: "TRV003", transactions: 0 }
+                    { 
+                        name: "Jean Pierre", 
+                        code: "TRV001", 
+                        address: "Bureau Principal - Av. John F. Kennedy, Santo Domingo",
+                        phone: "+1 809 123 4567",
+                        transactions: 0 
+                    },
+                    { 
+                        name: "Marie Laurent", 
+                        code: "TRV002", 
+                        address: "Bureau Centre-Ville - Rue du Commerce, Port-au-Prince",
+                        phone: "+1 809 123 4568",
+                        transactions: 0 
+                    },
+                    { 
+                        name: "Carlos Rodriguez", 
+                        code: "TRV003", 
+                        address: "Bureau Ouest - Av. des Héros, Santiago",
+                        phone: "+1 809 123 4569",
+                        transactions: 0 
+                    }
                 ];
                 localStorage.setItem('workers', JSON.stringify(defaultWorkers));
                 console.log('Travailleurs par défaut initialisés');
