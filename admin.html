@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransfertPro - Administrateur</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--dark), var(--primary));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 32px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e1e5e9;
+            margin-bottom: 25px;
+            background: white;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            background: #f8f9fa;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            border-left: 5px solid var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: var(--secondary);
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 300px;
+        }
+        
+        .demo-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .demo-accounts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .demo-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .demo-accounts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-user-shield"></i>
+                    <h1>TransfertPro - Administrateur</h1>
+                </div>
+                <div class="user-info">
+                    <span>Administrateur System</span>
+                    <button class="logout-btn" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Statistiques -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-transactions">0</div>
+                <div class="stat-label">Total Transferts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pending-transactions">0</div>
+                <div class="stat-label">En Attente</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completed-transactions">0</div>
+                <div class="stat-label">Complétés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-amount">$0</div>
+                <div class="stat-label">Montant Total</div>
+            </div>
+        </div>
+
+        <!-- Onglets -->
+        <div class="tabs">
+            <div class="tab active" data-tab="transactions">Transactions</div>
+            <div class="tab" data-tab="workers">Travailleurs</div>
+            <div class="tab" data-tab="settings">Paramètres</div>
+        </div>
+
+        <!-- Onglet Transactions -->
+        <div id="transactions" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Toutes les Transactions
+                    </h2>
+                    <input type="text" id="search-transactions" class="search-box" placeholder="Rechercher...">
+                </div>
+                <table id="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Expéditeur</th>
+                            <th>Destinataire</th>
+                            <th>Montant</th>
+                            <th>Date</th>
+                            <th>Travailleur</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Les transactions seront chargées ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Onglet Travailleurs -->
+        <div id="workers" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-users"></i>
+                        Gestion des Travailleurs
+                    </h2>
+                </div>
+                <form id="worker-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="worker-name">Nom complet</label>
+                            <input type="text" id="worker-name" required placeholder="Nom du travailleur">
+                        </div>
+                        <div class="form-group">
+                            <label for="worker-code">Code travailleur</label>
+                            <input type="text" id="worker-code" required placeholder="Code unique (ex: TRV001)">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Ajouter le Travailleur
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Liste des Travailleurs
+                    </h2>
+                </div>
+                <table id="workers-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Code</th>
+                            <th>Transferts</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Les travailleurs seront chargées ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Onglet Paramètres -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-cog"></i>
+                        Paramètres du Bureau
+                    </h2>
+                </div>
+                <form id="settings-form">
+                    <div class="form-group">
+                        <label for="office-address">Adresse du bureau</label>
+                        <textarea id="office-address" rows="3" required placeholder="Adresse complète du bureau"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="office-phone">Téléphone du bureau</label>
+                        <input type="text" id="office-phone" required placeholder="Numéro de téléphone">
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer les Paramètres
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        Taux de Change
+                    </h2>
+                </div>
+                <form id="rates-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rate-usd-htg">USD → HTG</label>
+                            <input type="number" id="rate-usd-htg" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rate-usd-dop">USD → DOP</label>
+                            <input type="number" id="rate-usd-dop" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rate-dop-htg">DOP → HTG</label>
+                            <input type="number" id="rate-dop-htg" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rate-htg-dop">HTG → DOP</label>
+                            <input type="number" id="rate-htg-dop" step="0.01" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-sync-alt"></i> Mettre à jour les Taux
+                    </button>
+                </form>
+            </div>
+
+            <!-- Section Mode Démonstration -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-vial"></i>
+                        Mode Démonstration
+                    </h2>
+                </div>
+                <div class="demo-section">
+                    <h4 style="color: var(--dark); margin-bottom: 15px;">Comptes de Test pour la Démonstration</h4>
+                    
+                    <div class="demo-accounts">
+                        <div class="demo-card">
+                            <h5 style="color: var(--primary); margin-bottom: 10px;">
+                                <i class="fas fa-users"></i> Travailleurs
+                            </h5>
+                            <div style="font-size: 14px; line-height: 1.6;">
+                                <div><strong>Jean Pierre</strong> - TRV001</div>
+                                <div><strong>Marie Laurent</strong> - TRV002</div>
+                                <div><strong>Carlos Rodriguez</strong> - TRV003</div>
+                            </div>
+                        </div>
+                        
+                        <div class="demo-card">
+                            <h5 style="color: var(--secondary); margin-bottom: 10px;">
+                                <i class="fas fa-user-shield"></i> Administrateur
+                            </h5>
+                            <div style="font-size: 14px; line-height: 1.6;">
+                                <div><strong>Nom d'utilisateur:</strong> admin</div>
+                                <div><strong>Mot de passe:</strong> admin123</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px; border-left: 4px solid var(--primary);">
+                        <strong>💡 Information Système:</strong>
+                        <p style="margin: 10px 0 0 0; color: #666; font-size: 14px; line-height: 1.5;">
+                            Ce système fonctionne en mode démonstration avec stockage local des données.<br>
+                            Toutes les informations sont sauvegardées dans le navigateur et persistent pendant la session.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-text">Message de notification</span>
+    </div>
+
+    <script>
+        // Vérifier si admin est connecté
+        if (sessionStorage.getItem('userType') !== 'admin') {
+            window.location.href = 'index.html';
+        }
+
+        // Données
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        
+        // CORRECTION : Initialisation des travailleurs
+        let workers = JSON.parse(localStorage.getItem('workers')) || [];
+        if (workers.length === 0) {
+            workers = [
+                { name: "Jean Pierre", code: "TRV001", transactions: 0 },
+                { name: "Marie Laurent", code: "TRV002", transactions: 0 },
+                { name: "Carlos Rodriguez", code: "TRV003", transactions: 0 }
+            ];
+            localStorage.setItem('workers', JSON.stringify(workers));
+        }
+        
+        let officeInfo = JSON.parse(localStorage.getItem('officeInfo')) || {
+            address: "Av. John F. Kennedy, Santo Domingo",
+            phone: "+1 809 123 4567"
+        };
+        let exchangeRates = JSON.parse(localStorage.getItem('exchangeRates')) || {
+            USD_HTG: 120,
+            USD_DOP: 56,
+            DOP_HTG: 2.14,
+            HTG_DOP: 0.47
+        };
+
+        // Éléments DOM
+        const logoutBtn = document.getElementById('logout-btn');
+        const notificationEl = document.getElementById('notification');
+
+        // Gestion des onglets
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+                
+                // Charger les données de l'onglet
+                if (tab.dataset.tab === 'transactions') {
+                    loadTransactions();
+                } else if (tab.dataset.tab === 'workers') {
+                    loadWorkers();
+                } else if (tab.dataset.tab === 'settings') {
+                    loadSettings();
+                }
+            });
+        });
+
+        // Charger les statistiques
+        function loadStats() {
+            const total = transactions.length;
+            const pending = transactions.filter(t => t.status === 'pending').length;
+            const completed = transactions.filter(t => t.status === 'completed').length;
+            const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
+
+            document.getElementById('total-transactions').textContent = total;
+            document.getElementById('pending-transactions').textContent = pending;
+            document.getElementById('completed-transactions').textContent = completed;
+            document.getElementById('total-amount').textContent = `$${totalAmount.toLocaleString('fr-FR')}`;
+        }
+
+        // Charger les transactions
+        function loadTransactions() {
+            const tbody = document.getElementById('transactions-table').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Aucune transaction</td></tr>';
+                return;
+            }
+
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(transaction => {
+                const row = document.createElement('tr');
+                const direction = transaction.transferType === 'RD_HAITI' ? '🇩🇴→🇭🇹' : '🇭🇹→🇩🇴';
+                
+                row.innerHTML = `
+                    <td>${transaction.id}</td>
+                    <td>${transaction.sender.name} ${transaction.sender.surname}</td>
+                    <td>${transaction.receiver.name} ${transaction.receiver.surname}</td>
+                    <td>${transaction.amount} ${transaction.currencyFrom} ${direction} ${transaction.convertedAmount} ${transaction.currencyTo}</td>
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>${transaction.workerCode}</td>
+                    <td><span class="status-badge status-${transaction.status}">${getStatusText(transaction.status)}</span></td>
+                    <td>
+                        <button class="btn btn-primary view-details" data-id="${transaction.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${transaction.status === 'pending' ? 
+                            `<button class="btn btn-danger cancel-transaction" data-id="${transaction.id}">
+                                <i class="fas fa-times"></i>
+                            </button>` : ''
+                        }
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+            // Événements
+            document.querySelectorAll('.view-details').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const transactionId = btn.dataset.id;
+                    viewTransactionDetails(transactionId);
+                });
+            });
+
+            document.querySelectorAll('.cancel-transaction').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const transactionId = btn.dataset.id;
+                    cancelTransaction(transactionId);
+                });
+            });
+
+            // Recherche
+            document.getElementById('search-transactions').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = tbody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+
+        // CORRECTION : Charger les travailleurs
+        function loadWorkers() {
+            const tbody = document.getElementById('workers-table').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            // CORRECTION : Toujours charger depuis le localStorage
+            const currentWorkers = JSON.parse(localStorage.getItem('workers')) || [];
+
+            if (currentWorkers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Aucun travailleur</td></tr>';
+                return;
+            }
+
+            currentWorkers.forEach(worker => {
+                const workerTransactions = transactions.filter(t => t.workerCode === worker.code).length;
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${worker.name}</td>
+                    <td>${worker.code}</td>
+                    <td>${workerTransactions}</td>
+                    <td>
+                        <button class="btn btn-danger delete-worker" data-code="${worker.code}">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+            // Événements
+            document.querySelectorAll('.delete-worker').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const workerCode = btn.dataset.code;
+                    deleteWorker(workerCode);
+                });
+            });
+        }
+
+        // Charger les paramètres
+        function loadSettings() {
+            document.getElementById('office-address').value = officeInfo.address;
+            document.getElementById('office-phone').value = officeInfo.phone;
+            
+            document.getElementById('rate-usd-htg').value = exchangeRates.USD_HTG;
+            document.getElementById('rate-usd-dop').value = exchangeRates.USD_DOP;
+            document.getElementById('rate-dop-htg').value = exchangeRates.DOP_HTG;
+            document.getElementById('rate-htg-dop').value = exchangeRates.HTG_DOP;
+        }
+
+        // CORRECTION : Formulaire travailleur
+        document.getElementById('worker-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('worker-name').value.trim();
+            const code = document.getElementById('worker-code').value.trim().toUpperCase();
+
+            // Vérifier si le code existe déjà
+            if (workers.find(w => w.code === code)) {
+                showNotification('Ce code travailleur existe déjà', 'error');
+                return;
+            }
+
+            // CORRECTION : Ajouter le travailleur avec la structure correcte
+            const newWorker = {
+                name: name,
+                code: code,
+                transactions: 0
+            };
+            
+            workers.push(newWorker);
+            localStorage.setItem('workers', JSON.stringify(workers));
+            
+            showNotification('Travailleur ajouté avec succès', 'success');
+            loadWorkers();
+            e.target.reset();
+        });
+
+        // Formulaire paramètres
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            officeInfo = {
+                address: document.getElementById('office-address').value,
+                phone: document.getElementById('office-phone').value
+            };
+            
+            localStorage.setItem('officeInfo', JSON.stringify(officeInfo));
+            showNotification('Paramètres enregistrés', 'success');
+        });
+
+        // Formulaire taux de change
+        document.getElementById('rates-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            exchangeRates = {
+                USD_HTG: parseFloat(document.getElementById('rate-usd-htg').value),
+                USD_DOP: parseFloat(document.getElementById('rate-usd-dop').value),
+                DOP_HTG: parseFloat(document.getElementById('rate-dop-htg').value),
+                HTG_DOP: parseFloat(document.getElementById('rate-htg-dop').value)
+            };
+            
+            localStorage.setItem('exchangeRates', JSON.stringify(exchangeRates));
+            showNotification('Taux de change mis à jour', 'success');
+        });
+
+        // Fonctions utilitaires
+        function viewTransactionDetails(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (transaction) {
+                alert(`Détails de la transaction #${transaction.id}:\n\n` +
+                      `Expéditeur: ${transaction.sender.name} ${transaction.sender.surname}\n` +
+                      `Destinataire: ${transaction.receiver.name} ${transaction.receiver.surname}\n` +
+                      `Montant: ${transaction.amount} ${transaction.currencyFrom} → ${transaction.convertedAmount} ${transaction.currencyTo}\n` +
+                      `Travailleur: ${transaction.workerCode}\n` +
+                      `Statut: ${getStatusText(transaction.status)}\n` +
+                      `Date: ${formatDate(transaction.date)}`);
+            }
+        }
+
+        function cancelTransaction(transactionId) {
+            if (confirm('Annuler cette transaction?')) {
+                const transaction = transactions.find(t => t.id === transactionId);
+                if (transaction) {
+                    transaction.status = 'cancelled';
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    loadTransactions();
+                    loadStats();
+                    showNotification('Transaction annulée', 'success');
+                }
+            }
+        }
+
+        function deleteWorker(workerCode) {
+            if (confirm('Supprimer ce travailleur?')) {
+                workers = workers.filter(w => w.code !== workerCode);
+                localStorage.setItem('workers', JSON.stringify(workers));
+                loadWorkers();
+                showNotification('Travailleur supprimé', 'success');
+            }
+        }
+
+        function showNotification(message, type) {
+            const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+            notificationEl.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            notificationEl.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 4000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'En attente',
+                'completed': 'Complété',
+                'cancelled': 'Annulé'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Déconnexion
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('userType');
+            window.location.href = 'index.html';
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadTransactions();
+            loadWorkers();
+            loadSettings();
+        });
+    </script>
+</body>
+</html>

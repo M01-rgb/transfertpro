@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransfertPro - Travailleur</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 32px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .welcome-text {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .transaction-item {
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .transaction-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .transaction-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .transaction-id {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .transaction-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .receipt {
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 25px;
+            border: 2px dashed #ccc;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .receipt-header h2 {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .receipt-details {
+            margin-bottom: 20px;
+        }
+        
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .receipt-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+        }
+        
+        .office-info {
+            background: linear-gradient(135deg, var(--light), #fff);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            border: 1px solid #e1e5e9;
+        }
+        
+        .office-detail {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .office-detail i {
+            color: var(--primary);
+            font-size: 18px;
+            width: 20px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary);
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .office-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stats-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .currency-display {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .transfer-direction {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .transfer-direction h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h1>TransfertPro - Travailleur</h1>
+                </div>
+                <div class="user-info">
+                    <div class="welcome-text">
+                        <span id="current-worker">Bienvenue, </span>
+                    </div>
+                    <button class="logout-btn" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Informations du bureau -->
+        <div class="office-info">
+            <div class="office-detail">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="current-date">Date: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-clock"></i>
+                <span id="current-time">Heure: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="office-address">Bureau: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-phone"></i>
+                <span id="office-phone">Téléphone: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-id-badge"></i>
+                <span id="worker-code-display">Code: Chargement...</span>
+            </div>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="grid">
+            <div class="stats-card">
+                <div class="stats-value" id="today-transactions">0</div>
+                <div class="stats-label">Transferts Aujourd'hui</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-value" id="pending-transactions">0</div>
+                <div class="stats-label">En Attente</div>
+            </div>
+        </div>
+
+        <!-- Formulaire de transfert -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-paper-plane"></i>
+                    Nouveau Transfert
+                </h2>
+            </div>
+            <form id="transaction-form">
+                <!-- Direction du transfert -->
+                <div class="transfer-direction">
+                    <h3 id="transfer-direction-text">Sélectionnez la direction du transfert</h3>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transfer-type">Type de transfert</label>
+                        <select id="transfer-type" required>
+                            <option value="">Choisir la direction</option>
+                            <option value="RD_HAITI">République Dominicaine → Haïti</option>
+                            <option value="HAITI_RD">Haïti → République Dominicaine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency-from">Devise d'envoi</label>
+                        <select id="currency-from" required>
+                            <option value="">Choisir la devise</option>
+                            <option value="USD">Dollars américains ($)</option>
+                            <option value="DOP">Pesos dominicains (DOP)</option>
+                            <option value="HTG">Gourdes haïtiennes (HTG)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Informations de l'Expéditeur</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sender-name">Nom</label>
+                        <input type="text" id="sender-name" required placeholder="Nom de l'expéditeur">
+                    </div>
+                    <div class="form-group">
+                        <label for="sender-surname">Prénom</label>
+                        <input type="text" id="sender-surname" required placeholder="Prénom de l'expéditeur">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sender-id">Carte d'identité / Passeport</label>
+                        <input type="text" id="sender-id" required placeholder="Numéro d'identification">
+                    </div>
+                    <div class="form-group">
+                        <label for="sender-phone">Téléphone</label>
+                        <input type="tel" id="sender-phone" required placeholder="Numéro de téléphone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sender-address">Adresse</label>
+                    <input type="text" id="sender-address" required placeholder="Adresse complète">
+                </div>
+                
+                <h3 class="section-title">Informations du Destinataire</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="receiver-name">Nom</label>
+                        <input type="text" id="receiver-name" required placeholder="Nom du destinataire">
+                    </div>
+                    <div class="form-group">
+                        <label for="receiver-surname">Prénom</label>
+                        <input type="text" id="receiver-surname" required placeholder="Prénom du destinataire">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="receiver-id">Carte d'identité / Passeport</label>
+                        <input type="text" id="receiver-id" required placeholder="Numéro d'identification">
+                    </div>
+                    <div class="form-group">
+                        <label for="receiver-phone">Téléphone</label>
+                        <input type="tel" id="receiver-phone" required placeholder="Numéro de téléphone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="receiver-address">Adresse du destinataire</label>
+                    <input type="text" id="receiver-address" required placeholder="Adresse complète">
+                </div>
+                
+                <h3 class="section-title">Détails du Transfert</h3>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label for="amount">Montant à envoyer</label>
+                        <input type="number" id="amount" min="1" step="0.01" required placeholder="Montant">
+                    </div>
+                    <div class="form-group">
+                        <label for="exchange-rate">Taux de change</label>
+                        <input type="number" id="exchange-rate" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency-to">Devise de réception</label>
+                        <select id="currency-to" required>
+                            <option value="">Choisir la devise</option>
+                            <option value="USD">Dollars américains ($)</option>
+                            <option value="DOP">Pesos dominicains (DOP)</option>
+                            <option value="HTG">Gourdes haïtiennes (HTG)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Affichage du montant converti -->
+                <div id="conversion-display" class="currency-display" style="display: none;">
+                    <strong>Montant à recevoir: <span id="converted-amount">0</span> <span id="target-currency"></span></strong>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes (optionnel)</label>
+                    <textarea id="notes" rows="3" placeholder="Notes supplémentaires..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-check"></i> Confirmer le Transfert
+                </button>
+            </form>
+        </div>
+        
+        <!-- Transactions récentes -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Transferts Récents
+                </h2>
+            </div>
+            <div id="recent-transactions" class="grid">
+                <!-- Les transactions récentes seront affichées ici -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Reçu -->
+    <div id="receipt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div class="receipt">
+            <div class="receipt-header">
+                <h2>Reçu de Transfert</h2>
+                <p>TransfertPro</p>
+                <p id="receipt-direction">Direction: Chargement...</p>
+                <p id="receipt-office">Bureau: Chargement...</p>
+                <p id="receipt-worker">Travailleur: Chargement...</p>
+            </div>
+            <div class="receipt-details">
+                <div class="receipt-row">
+                    <span>Numéro de transaction:</span>
+                    <span id="receipt-id">TR1234567</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Date et heure:</span>
+                    <span id="receipt-date">01/01/2023 10:30</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Expéditeur:</span>
+                    <span id="receipt-sender">Jean Dupont</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Destinataire:</span>
+                    <span id="receipt-receiver">Marie Joseph</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Montant envoyé:</span>
+                    <span id="receipt-amount">$100</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Montant à recevoir:</span>
+                    <span id="receipt-receive">12,000 HTG</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Direction:</span>
+                    <span id="receipt-transfer-type">RD → Haiti</span>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button id="print-receipt" class="btn-primary">
+                    <i class="fas fa-print"></i> Imprimer
+                </button>
+                <button id="close-receipt" class="btn-success">
+                    <i class="fas fa-check"></i> Terminer
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-text">Message de notification</span>
+    </div>
+
+    <script>
+        // CORRECTION : Vérifier si l'utilisateur est connecté
+        const currentWorker = JSON.parse(sessionStorage.getItem('currentWorker'));
+        const officeInfo = JSON.parse(localStorage.getItem('officeInfo')) || {
+            address: "Av. John F. Kennedy, Santo Domingo",
+            phone: "+1 809 123 4567"
+        };
+        
+        if (!currentWorker) {
+            window.location.href = 'index.html';
+        }
+        
+        // Données locales
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let transactionCounter = parseInt(localStorage.getItem('transactionCounter')) || 1000000;
+
+        // Éléments DOM
+        const transactionForm = document.getElementById('transaction-form');
+        const recentTransactionsEl = document.getElementById('recent-transactions');
+        const receiptModal = document.getElementById('receipt-modal');
+        const notificationEl = document.getElementById('notification');
+        const currentDateEl = document.getElementById('current-date');
+        const currentTimeEl = document.getElementById('current-time');
+        const officeAddressEl = document.getElementById('office-address');
+        const officePhoneEl = document.getElementById('office-phone');
+        const workerCodeDisplayEl = document.getElementById('worker-code-display');
+        const currentWorkerEl = document.getElementById('current-worker');
+        const logoutBtn = document.getElementById('logout-btn');
+        const todayTransactionsEl = document.getElementById('today-transactions');
+        const pendingTransactionsEl = document.getElementById('pending-transactions');
+        const transferTypeSelect = document.getElementById('transfer-type');
+        const currencyFromSelect = document.getElementById('currency-from');
+        const currencyToSelect = document.getElementById('currency-to');
+        const amountInput = document.getElementById('amount');
+        const exchangeRateInput = document.getElementById('exchange-rate');
+        const conversionDisplay = document.getElementById('conversion-display');
+        const convertedAmountEl = document.getElementById('converted-amount');
+        const targetCurrencyEl = document.getElementById('target-currency');
+        const transferDirectionText = document.getElementById('transfer-direction-text');
+
+        // Taux de change par défaut
+        const defaultExchangeRates = {
+            'USD_HTG': 120,
+            'USD_DOP': 56,
+            'DOP_HTG': 2.14,
+            'HTG_DOP': 0.47,
+            'DOP_USD': 0.018,
+            'HTG_USD': 0.0083
+        };
+
+        // Générer un ID de transaction unique
+        function generateTransactionId() {
+            return 'TR' + Date.now().toString().substr(-7);
+        }
+
+        // Initialisation de la page
+        function initializePage() {
+            // Afficher les informations du travailleur
+            currentWorkerEl.textContent += currentWorker.name;
+            workerCodeDisplayEl.textContent = `Code: ${currentWorker.code}`;
+            
+            // Afficher les informations du bureau
+            officeAddressEl.textContent = `Bureau: ${officeInfo.address}`;
+            officePhoneEl.textContent = `Téléphone: ${officeInfo.phone}`;
+            
+            // Mettre à jour la date et l'heure
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Charger les données
+            loadRecentTransactions();
+            updateStats();
+            
+            // Événements pour les sélecteurs
+            transferTypeSelect.addEventListener('change', updateTransferDirection);
+            currencyFromSelect.addEventListener('change', updateExchangeRate);
+            currencyToSelect.addEventListener('change', updateExchangeRate);
+            amountInput.addEventListener('input', calculateConversion);
+            exchangeRateInput.addEventListener('input', calculateConversion);
+        }
+
+        // Mettre à jour la direction du transfert
+        function updateTransferDirection() {
+            const transferType = transferTypeSelect.value;
+            if (transferType === 'RD_HAITI') {
+                transferDirectionText.textContent = '🇩🇴 République Dominicaine → Haïti 🇭🇹';
+            } else if (transferType === 'HAITI_RD') {
+                transferDirectionText.textContent = '🇭🇹 Haïti → République Dominicaine 🇩🇴';
+            } else {
+                transferDirectionText.textContent = 'Sélectionnez la direction du transfert';
+            }
+            
+            updateCurrencyOptions();
+        }
+
+        // Mettre à jour les options de devise
+        function updateCurrencyOptions() {
+            const transferType = transferTypeSelect.value;
+            
+            if (transferType === 'RD_HAITI') {
+                currencyFromSelect.innerHTML = `
+                    <option value="">Choisir la devise</option>
+                    <option value="USD">Dollars américains ($)</option>
+                    <option value="DOP">Pesos dominicains (DOP)</option>
+                `;
+                currencyToSelect.innerHTML = `
+                    <option value="">Choisir la devise</option>
+                    <option value="HTG">Gourdes haïtiennes (HTG)</option>
+                    <option value="USD">Dollars américains ($)</option>
+                `;
+            } else if (transferType === 'HAITI_RD') {
+                currencyFromSelect.innerHTML = `
+                    <option value="">Choisir la devise</option>
+                    <option value="USD">Dollars américains ($)</option>
+                    <option value="HTG">Gourdes haïtiennes (HTG)</option>
+                `;
+                currencyToSelect.innerHTML = `
+                    <option value="">Choisir la devise</option>
+                    <option value="DOP">Pesos dominicains (DOP)</option>
+                    <option value="USD">Dollars américains ($)</option>
+                `;
+            } else {
+                currencyFromSelect.innerHTML = '<option value="">Choisir la devise</option>';
+                currencyToSelect.innerHTML = '<option value="">Choisir la devise</option>';
+            }
+            
+            exchangeRateInput.value = '';
+            conversionDisplay.style.display = 'none';
+        }
+
+        // Mettre à jour automatiquement le taux de change
+        function updateExchangeRate() {
+            const currencyFrom = currencyFromSelect.value;
+            const currencyTo = currencyToSelect.value;
+            
+            if (currencyFrom && currencyTo && currencyFrom !== currencyTo) {
+                const rateKey = `${currencyFrom}_${currencyTo}`;
+                const defaultRate = defaultExchangeRates[rateKey];
+                
+                if (defaultRate) {
+                    exchangeRateInput.value = defaultRate;
+                    calculateConversion();
+                }
+            }
+        }
+
+        // Calculer le montant converti
+        function calculateConversion() {
+            const amount = parseFloat(amountInput.value);
+            const exchangeRate = parseFloat(exchangeRateInput.value);
+            const currencyFrom = currencyFromSelect.value;
+            const currencyTo = currencyToSelect.value;
+
+            if (amount && exchangeRate && currencyFrom && currencyTo) {
+                const convertedAmount = amount * exchangeRate;
+                convertedAmountEl.textContent = convertedAmount.toLocaleString('fr-FR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                targetCurrencyEl.textContent = currencyTo;
+                conversionDisplay.style.display = 'block';
+            } else {
+                conversionDisplay.style.display = 'none';
+            }
+        }
+
+        // Mettre à jour la date et l'heure en temps réel
+        function updateDateTime() {
+            const now = new Date();
+            currentDateEl.textContent = `Date: ${now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+            currentTimeEl.textContent = `Heure: ${now.toLocaleTimeString('fr-FR')}`;
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todayCount = transactions.filter(t => 
+                new Date(t.date).toDateString() === today && 
+                t.workerCode === currentWorker.code
+            ).length;
+            
+            const pendingCount = transactions.filter(t => 
+                t.status === 'pending' && 
+                t.workerCode === currentWorker.code
+            ).length;
+            
+            todayTransactionsEl.textContent = todayCount;
+            pendingTransactionsEl.textContent = pendingCount;
+        }
+
+        // Déconnexion
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter?')) {
+                sessionStorage.removeItem('currentWorker');
+                sessionStorage.removeItem('officeInfo');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Soumission du formulaire de transaction
+        transactionForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Validation
+            const transferType = transferTypeSelect.value;
+            const currencyFrom = currencyFromSelect.value;
+            const currencyTo = currencyToSelect.value;
+            
+            if (!transferType) {
+                showNotification('Veuillez sélectionner la direction du transfert', 'error');
+                return;
+            }
+            
+            if (!currencyFrom || !currencyTo) {
+                showNotification('Veuillez sélectionner les devises', 'error');
+                return;
+            }
+            
+            if (currencyFrom === currencyTo) {
+                showNotification('Les devises d\'envoi et de réception doivent être différentes', 'error');
+                return;
+            }
+
+            // Animation du bouton
+            const submitBtn = transactionForm.querySelector('button');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading"></div> Traitement...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                // Récupérer les données du formulaire
+                const transaction = {
+                    id: generateTransactionId(),
+                    transferType: transferType,
+                    sender: {
+                        name: document.getElementById('sender-name').value.trim(),
+                        surname: document.getElementById('sender-surname').value.trim(),
+                        id: document.getElementById('sender-id').value.trim(),
+                        phone: document.getElementById('sender-phone').value.trim(),
+                        address: document.getElementById('sender-address').value.trim()
+                    },
+                    receiver: {
+                        name: document.getElementById('receiver-name').value.trim(),
+                        surname: document.getElementById('receiver-surname').value.trim(),
+                        id: document.getElementById('receiver-id').value.trim(),
+                        phone: document.getElementById('receiver-phone').value.trim(),
+                        address: document.getElementById('receiver-address').value.trim()
+                    },
+                    amount: parseFloat(document.getElementById('amount').value),
+                    currencyFrom: currencyFrom,
+                    currencyTo: currencyTo,
+                    exchangeRate: parseFloat(document.getElementById('exchange-rate').value),
+                    convertedAmount: parseFloat(document.getElementById('amount').value) * parseFloat(document.getElementById('exchange-rate').value),
+                    notes: document.getElementById('notes').value.trim(),
+                    date: new Date().toISOString(),
+                    status: 'pending',
+                    received: false,
+                    receivedDate: null,
+                    workerCode: currentWorker.code,
+                    workerName: currentWorker.name,
+                    office: officeInfo.address,
+                    officePhone: officeInfo.phone
+                };
+
+                // Sauvegarder
+                addTransaction(transaction);
+                
+                // Afficher le reçu
+                showReceipt(transaction);
+                
+                // Réinitialiser le formulaire
+                transactionForm.reset();
+                conversionDisplay.style.display = 'none';
+                updateTransferDirection();
+                
+                // Mettre à jour l'affichage
+                loadRecentTransactions();
+                updateStats();
+                
+                // Afficher une notification
+                showNotification('Transfert créé avec succès!', 'success');
+                
+                // Envoyer un SMS au destinataire (simulé)
+                sendSMSNotification(transaction);
+
+                // Réactiver le bouton
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 1500);
+        });
+
+        // Fonction pour ajouter une transaction
+        function addTransaction(transaction) {
+            transactions.push(transaction);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        // Fonction pour charger les transactions récentes
+        function loadRecentTransactions() {
+            recentTransactionsEl.innerHTML = '';
+            
+            // Filtrer les transactions du travailleur actuel
+            const workerTransactions = transactions.filter(t => t.workerCode === currentWorker.code);
+            
+            // Trier par date (les plus récentes d'abord)
+            const sortedTransactions = [...workerTransactions].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            ).slice(0, 6);
+            
+            if (sortedTransactions.length === 0) {
+                recentTransactionsEl.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p>Aucune transaction récente.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedTransactions.forEach(transaction => {
+                const transactionEl = document.createElement('div');
+                transactionEl.className = 'transaction-item';
+                
+                const statusClass = `status-${transaction.status}`;
+                const direction = transaction.transferType === 'RD_HAITI' ? '🇩🇴→🇭🇹' : '🇭🇹→🇩🇴';
+                
+                transactionEl.innerHTML = `
+                    <div class="transaction-id">#${transaction.id}</div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Direction:</strong> ${direction}
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>De:</strong> ${transaction.sender.name} ${transaction.sender.surname}
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>À:</strong> ${transaction.receiver.name} ${transaction.receiver.surname}
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Montant:</strong> ${transaction.amount} ${transaction.currencyFrom} → ${transaction.convertedAmount} ${transaction.currencyTo}
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Date:</strong> ${formatDate(transaction.date)}
+                    </div>
+                    <div>
+                        <span class="transaction-status ${statusClass}">${getStatusText(transaction.status)}</span>
+                    </div>
+                `;
+                
+                recentTransactionsEl.appendChild(transactionEl);
+            });
+        }
+
+        // Fonction pour afficher le reçu
+        function showReceipt(transaction) {
+            const directionText = transaction.transferType === 'RD_HAITI' 
+                ? 'République Dominicaine → Haïti' 
+                : 'Haïti → République Dominicaine';
+                
+            document.getElementById('receipt-id').textContent = `#${transaction.id}`;
+            document.getElementById('receipt-date').textContent = formatDate(transaction.date);
+            document.getElementById('receipt-sender').textContent = `${transaction.sender.name} ${transaction.sender.surname}`;
+            document.getElementById('receipt-receiver').textContent = `${transaction.receiver.name} ${transaction.receiver.surname}`;
+            document.getElementById('receipt-amount').textContent = `${transaction.amount} ${transaction.currencyFrom}`;
+            document.getElementById('receipt-receive').textContent = `${transaction.convertedAmount.toLocaleString('fr-FR')} ${transaction.currencyTo}`;
+            document.getElementById('receipt-transfer-type').textContent = directionText;
+            document.getElementById('receipt-direction').textContent = `Direction: ${directionText}`;
+            document.getElementById('receipt-office').textContent = `Bureau: ${transaction.office}`;
+            document.getElementById('receipt-worker').textContent = `Travailleur: ${transaction.workerCode} - ${transaction.workerName}`;
+            
+            receiptModal.style.display = 'flex';
+        }
+
+        // Fonction pour afficher une notification
+        function showNotification(message, type) {
+            const icon = type === 'error' ? 'fa-exclamation-circle' : 
+                         type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+            notificationEl.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            notificationEl.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 4000);
+        }
+
+        // Fonction pour envoyer une notification SMS (simulée)
+        function sendSMSNotification(transaction) {
+            const direction = transaction.transferType === 'RD_HAITI' ? 'République Dominicaine vers Haïti' : 'Haïti vers République Dominicaine';
+            
+            console.log(`SMS envoyé à ${transaction.receiver.phone}: 
+            Bonjour ${transaction.receiver.name}, vous avez reçu un transfert de ${transaction.amount} ${transaction.currencyFrom} de la part de ${transaction.sender.name} ${transaction.sender.surname}. 
+            Montant à recevoir: ${transaction.convertedAmount} ${transaction.currencyTo}. Code de transaction: ${transaction.id}. Présentez votre pièce d'identité pour récupérer les fonds.`);
+            
+            showNotification(`SMS envoyé à ${transaction.receiver.phone}`, 'info');
+        }
+
+        // Fonctions utilitaires
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'En attente',
+                'completed': 'Complété',
+                'cancelled': 'Annulé'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Gestion des événements pour le reçu
+        document.getElementById('print-receipt').addEventListener('click', () => {
+            window.print();
+        });
+
+        document.getElementById('close-receipt').addEventListener('click', () => {
+            receiptModal.style.display = 'none';
+        });
+
+        // Fermer le modal en cliquant à l'extérieur
+        receiptModal.addEventListener('click', (e) => {
+            if (e.target === receiptModal) {
+                receiptModal.style.display = 'none';
+            }
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>
