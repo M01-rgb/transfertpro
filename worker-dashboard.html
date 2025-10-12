@@ -773,15 +773,25 @@
             return 'TR' + Date.now().toString().substr(-7);
         }
 
-        // Initialisation de la page
+        // CORRECTION : Initialisation de la page avec informations personnalisées
         function initializePage() {
             // Afficher les informations du travailleur
             currentWorkerEl.textContent += currentWorker.name;
             workerCodeDisplayEl.textContent = `Code: ${currentWorker.code}`;
             
-            // Afficher les informations du bureau
-            officeAddressEl.textContent = `Bureau: ${officeInfo.address}`;
-            officePhoneEl.textContent = `Téléphone: ${officeInfo.phone}`;
+            // CORRECTION : Charger les informations spécifiques du travailleur
+            const workers = JSON.parse(localStorage.getItem('workers')) || [];
+            const currentWorkerData = workers.find(w => w.code === currentWorker.code);
+            
+            // Afficher les informations du bureau et du travailleur
+            if (currentWorkerData) {
+                officeAddressEl.textContent = `Bureau: ${currentWorkerData.address || officeInfo.address}`;
+                officePhoneEl.textContent = `Téléphone: ${currentWorkerData.phone || officeInfo.phone}`;
+            } else {
+                // Fallback aux informations du bureau général
+                officeAddressEl.textContent = `Bureau: ${officeInfo.address}`;
+                officePhoneEl.textContent = `Téléphone: ${officeInfo.phone}`;
+            }
             
             // Mettre à jour la date et l'heure
             updateDateTime();
