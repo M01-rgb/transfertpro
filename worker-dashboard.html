@@ -809,86 +809,64 @@
             return 'TR' + Date.now().toString().substr(-7);
         }
 
-        // Fonction de débogage pour vérifier Firebase
+        // Test de connexion Firebase
         async function testFirebaseConnection() {
             try {
-                const { db, collection, getDocs } = window.firebase;
-                console.log("Test de connexion Firebase...");
+                console.log("🔥 Test de connexion Firebase...");
+                const { db, collection, getDocs, addDoc } = window.firebase;
                 
-                // Tester la connexion en listant les collections
-                const querySnapshot = await getDocs(collection(db, "transactions"));
-                console.log("Connexion Firebase OK. Transactions trouvées:", querySnapshot.size);
+                // Test d'écriture
+                const testDoc = await addDoc(collection(db, "test_connection"), {
+                    test: "Connexion OK",
+                    timestamp: new Date().toISOString(),
+                    worker: currentWorker.code
+                });
+                console.log("✅ Firebase: Écriture OK - ID:", testDoc.id);
+                
+                // Test de lecture
+                const querySnapshot = await getDocs(collection(db, "test_connection"));
+                console.log("✅ Firebase: Lecture OK - Documents:", querySnapshot.size);
                 
                 return true;
             } catch (error) {
-                console.error("Erreur connexion Firebase:", error);
+                console.error("❌ Erreur Firebase:", error);
+                showNotification("Firebase: " + error.message, "error");
                 return false;
             }
         }
 
-        // Fonction de secours pour créer une transaction
-        async function createTransactionWithFallback(transactionData) {
+        // Fonction pour créer une transaction avec Firebase
+        async function createFirebaseTransaction(transactionData) {
             try {
+                console.log("🔥 Tentative de sauvegarde Firebase...");
                 const { db, collection, addDoc } = window.firebase;
-                console.log("Tentative d'ajout à Firebase...");
+                
                 const docRef = await addDoc(collection(db, "transactions"), transactionData);
-                console.log("✅ Transaction créée dans Firebase, ID:", docRef.id);
+                console.log("✅ Transaction sauvegardée dans Firebase! ID:", docRef.id);
+                
                 return { success: true, id: docRef.id };
             } catch (error) {
-                console.error("❌ Erreur Firebase, utilisation du fallback localStorage:", error);
-                
-                // Fallback vers localStorage
-                try {
-                    const existingTransactions = JSON.parse(localStorage.getItem('transactions_fallback')) || [];
-                    transactionData.firebaseId = 'fallback-' + Date.now();
-                    existingTransactions.push(transactionData);
-                    localStorage.setItem('transactions_fallback', JSON.stringify(existingTransactions));
-                    console.log("✅ Transaction sauvegardée en fallback localStorage");
-                    return { success: true, id: transactionData.id, fallback: true };
-                } catch (fallbackError) {
-                    console.error("❌ Erreur fallback:", fallbackError);
-                    return { success: false, error: fallbackError };
-                }
+                console.error("❌ Erreur Firebase:", error);
+                throw error;
             }
         }
 
         // Initialisation de la page
         async function initializePage() {
-            console.log("Initialisation de la page travailleur...");
-            
-            // Test de connexion Firebase
-            const firebaseConnected = await testFirebaseConnection();
-            if (!firebaseConnected) {
-                showNotification("Attention: Mode hors ligne activé", "info");
-            }
+            console.log("🚀 Initialisation de la page travailleur...");
             
             // Afficher les informations du travailleur
             currentWorkerEl.textContent += currentWorker.name;
             workerCodeDisplayEl.textContent = `Code: ${currentWorker.code}`;
             
-            // Charger les informations spécifiques du travailleur depuis Firebase
-            try {
-                const { db, collection, getDocs, query, where } = window.firebase;
-                const workersQuery = query(
-                    collection(db, "workers"),
-                    where("code", "==", currentWorker.code)
-                );
-                
-                const querySnapshot = await getDocs(workersQuery);
-                if (!querySnapshot.empty) {
-                    const workerDoc = querySnapshot.docs[0];
-                    const workerData = workerDoc.data();
-                    
-                    officeAddressEl.textContent = `Bureau: ${workerData.address || officeInfo.address}`;
-                    officePhoneEl.textContent = `Téléphone: ${workerData.phone || officeInfo.phone}`;
-                    console.log("Informations travailleur chargées:", workerData);
-                } else {
-                    officeAddressEl.textContent = `Bureau: ${officeInfo.address}`;
-                    officePhoneEl.textContent = `Téléphone: ${officeInfo.phone}`;
-                    console.log("Travailleur non trouvé dans Firebase, utilisation des valeurs par défaut");
-                }
-            } catch (error) {
-                console.error('Erreur chargement info travailleur:', error);
+            // Charger les informations du travailleur
+            const workers = JSON.parse(localStorage.getItem('workers')) || [];
+            const workerData = workers.find(w => w.code === currentWorker.code);
+            
+            if (workerData) {
+                officeAddressEl.textContent = `Bureau: ${workerData.address || officeInfo.address}`;
+                officePhoneEl.textContent = `Téléphone: ${workerData.phone || officeInfo.phone}`;
+            } else {
                 officeAddressEl.textContent = `Bureau: ${officeInfo.address}`;
                 officePhoneEl.textContent = `Téléphone: ${officeInfo.phone}`;
             }
@@ -908,7 +886,7 @@
             amountInput.addEventListener('input', calculateConversion);
             exchangeRateInput.addEventListener('input', calculateConversion);
 
-            console.log("Page travailleur initialisée avec succès");
+            console.log("✅ Page travailleur initialisée avec succès");
         }
 
         // Mettre à jour la direction du transfert
@@ -1094,7 +1072,7 @@
                     officePhone: officeInfo.phone
                 };
 
-                console.log("Données de transaction préparées:", transactionData);
+                console.log("📦 Données de transaction préparées:", transactionData);
 
                 // VALIDATION DES DONNÉES OBLIGATOIRES
                 if (!transactionData.sender.name || !transactionData.sender.surname || 
@@ -1103,37 +1081,35 @@
                     throw new Error("Tous les champs obligatoires doivent être remplis");
                 }
 
-                // CORRECTION : Utiliser la fonction de secours
-                const result = await createTransactionWithFallback(transactionData);
-                if (!result.success) {
-                    throw new Error("Impossible de sauvegarder la transaction");
+                // CORRECTION : Sauvegarde dans Firebase
+                console.log("🔥 Tentative de sauvegarde Firebase...");
+                const firebaseResult = await createFirebaseTransaction(transactionData);
+                
+                if (firebaseResult.success) {
+                    console.log("✅ Transaction sauvegardée dans Firebase!");
+                    
+                    // Afficher le reçu
+                    showReceipt(transactionData);
+                    
+                    // Réinitialiser le formulaire
+                    transactionForm.reset();
+                    conversionDisplay.style.display = 'none';
+                    updateTransferDirection();
+                    
+                    // Mettre à jour l'affichage
+                    await loadRecentTransactions();
+                    updateStats();
+                    
+                    // Afficher une notification
+                    showNotification('Transfert créé avec succès! (Firebase)', 'success');
+                    
+                    // Envoyer un SMS au destinataire (simulé)
+                    sendSMSNotification(transactionData);
                 }
-
-                // Afficher le reçu
-                showReceipt(transactionData);
-                
-                // Réinitialiser le formulaire
-                transactionForm.reset();
-                conversionDisplay.style.display = 'none';
-                updateTransferDirection();
-                
-                // Mettre à jour l'affichage
-                await loadRecentTransactions();
-                updateStats();
-                
-                // Afficher une notification
-                if (result.fallback) {
-                    showNotification('Transfert créé (mode hors ligne)!', 'success');
-                } else {
-                    showNotification('Transfert créé avec succès!', 'success');
-                }
-                
-                // Envoyer un SMS au destinataire (simulé)
-                sendSMSNotification(transactionData);
 
             } catch (error) {
-                console.error('Erreur détaillée création transaction:', error);
-                showNotification('Erreur lors de la création du transfert: ' + error.message, 'error');
+                console.error('❌ Erreur création transaction:', error);
+                showNotification('Erreur Firebase: ' + error.message, 'error');
             } finally {
                 // Réactiver le bouton
                 submitBtn.innerHTML = originalText;
@@ -1141,29 +1117,27 @@
             }
         });
 
-        // Fonction pour charger les transactions récentes depuis Firebase
+        // FONCTION CORRIGÉE : Charger les transactions récentes depuis Firebase
         async function loadRecentTransactions() {
             try {
-                const { db, collection, getDocs, query, where, orderBy } = window.firebase;
-                const transactionsQuery = query(
-                    collection(db, "transactions"),
-                    where("workerCode", "==", currentWorker.code),
-                    orderBy("date", "desc")
-                );
+                const { db, collection, getDocs } = window.firebase;
                 
-                const querySnapshot = await getDocs(transactionsQuery);
+                // REQUÊTE SIMPLIFIÉE pour éviter l'erreur d'index
+                const querySnapshot = await getDocs(collection(db, "transactions"));
                 
                 transactions = [];
                 querySnapshot.forEach((doc) => {
-                    transactions.push({ id: doc.id, ...doc.data() });
+                    const transaction = { id: doc.id, ...doc.data() };
+                    // Filtrer côté client pour le travailleur actuel
+                    if (transaction.workerCode === currentWorker.code) {
+                        transactions.push(transaction);
+                    }
                 });
 
-                console.log("Transactions chargées:", transactions.length);
+                // Trier côté client par date (plus récent en premier)
+                transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                // Charger aussi les transactions fallback
-                const fallbackTransactions = JSON.parse(localStorage.getItem('transactions_fallback')) || [];
-                const workerFallbackTransactions = fallbackTransactions.filter(t => t.workerCode === currentWorker.code);
-                transactions = [...transactions, ...workerFallbackTransactions];
+                console.log("Transactions chargées:", transactions.length);
 
                 recentTransactionsEl.innerHTML = '';
                 
@@ -1257,7 +1231,7 @@
         function sendSMSNotification(transaction) {
             const direction = transaction.transferType === 'RD_HAITI' ? 'République Dominicaine vers Haïti' : 'Haïti vers République Dominicaine';
             
-            console.log(`SMS envoyé à ${transaction.receiver.phone}: 
+            console.log(`📱 SMS envoyé à ${transaction.receiver.phone}: 
             Bonjour ${transaction.receiver.name}, vous avez reçu un transfert de ${transaction.amount} ${transaction.currencyFrom} de la part de ${transaction.sender.name} ${transaction.sender.surname}. 
             Montant à recevoir: ${transaction.convertedAmount} ${transaction.currencyTo}. Code de transaction: ${transaction.id}. Présentez votre pièce d'identité pour récupérer les fonds.`);
             
@@ -1299,35 +1273,51 @@
             }
         });
 
-        // Écoute en temps réel des transactions
+        // ÉCOUTE TEMPS RÉEL CORRIGÉE : Évite l'erreur d'index
         function setupRealtimeListener() {
             try {
-                const { db, collection, onSnapshot, query, where } = window.firebase;
+                const { db, collection, onSnapshot } = window.firebase;
                 
-                const transactionsQuery = query(
-                    collection(db, "transactions"),
-                    where("workerCode", "==", currentWorker.code)
-                );
+                // REQUÊTE SIMPLIFIÉE sans where/orderBy pour éviter l'erreur d'index
+                const transactionsQuery = collection(db, "transactions");
                 
                 onSnapshot(transactionsQuery, (snapshot) => {
-                    console.log("Mise à jour temps réel des transactions");
+                    console.log("🔄 Mise à jour temps réel Firebase");
+                    transactions = [];
+                    snapshot.forEach((doc) => {
+                        const transaction = { id: doc.id, ...doc.data() };
+                        // Filtrer côté client pour le travailleur actuel
+                        if (transaction.workerCode === currentWorker.code) {
+                            transactions.push(transaction);
+                        }
+                    });
+                    
+                    // Trier côté client par date
+                    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
                     loadRecentTransactions();
                     updateStats();
                 });
             } catch (error) {
-                console.error('Erreur écoute temps réel:', error);
+                console.error('❌ Erreur écoute temps réel:', error);
             }
         }
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log("DOM chargé, initialisation...");
+            console.log("🚀 DOM chargé, initialisation...");
             try {
+                // Test Firebase d'abord
+                const firebaseOK = await testFirebaseConnection();
+                if (firebaseOK) {
+                    console.log("✅ Firebase fonctionne!");
+                    setupRealtimeListener();
+                }
+                
                 await initializePage();
-                setupRealtimeListener();
-                console.log("Page travailleur prête");
+                console.log("✅ Page travailleur prête");
             } catch (error) {
-                console.error("Erreur lors de l'initialisation:", error);
+                console.error("❌ Erreur lors de l'initialisation:", error);
                 showNotification("Erreur lors du chargement de la page", "error");
             }
         });
