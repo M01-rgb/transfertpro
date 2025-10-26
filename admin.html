@@ -37,7 +37,6 @@
         };
     </script>
     <style>
-        /* Le CSS reste exactement le même que votre fichier original */
         :root {
             --primary: #3498db;
             --secondary: #2ecc71;
@@ -723,6 +722,10 @@
                 querySnapshot.forEach((doc) => {
                     transactions.push({ id: doc.id, ...doc.data() });
                 });
+
+                // Charger aussi les transactions fallback
+                const fallbackTransactions = JSON.parse(localStorage.getItem('transactions_fallback')) || [];
+                transactions = [...transactions, ...fallbackTransactions];
 
                 // Trier par date
                 transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
