@@ -33,13 +33,481 @@
         };
     </script>
     <style>
-        /* Le CSS reste exactement le même que votre fichier original */
-        /* ... Votre CSS complet ... */
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 32px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            color: var(--secondary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px 12px 50px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .transaction-details {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-left: 5px solid var(--primary);
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .detail-value {
+            color: #666;
+            text-align: right;
+        }
+        
+        .amount-highlight {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--secondary);
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px dashed var(--secondary);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .verification-success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Le HTML reste exactement le même que votre fichier original -->
-    <!-- ... Votre HTML complet ... -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <h1>TransfertPro - Réception</h1>
+                </div>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Formulaire de vérification -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-search"></i>
+                    Vérifier un Transfert
+                </h2>
+            </div>
+            <form id="verification-form">
+                <div class="form-group">
+                    <label for="receiver-name">Votre nom complet</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="receiver-name" required placeholder="Le nom du destinataire">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transaction-id">Numéro de transaction</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-receipt"></i>
+                        <input type="text" id="transaction-id" required placeholder="Numéro à 7 chiffres (ex: TR1234567)">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-success">
+                    <i class="fas fa-search"></i> Vérifier le Transfert
+                </button>
+            </form>
+        </div>
+
+        <!-- Résultats de la vérification -->
+        <div id="verification-result" style="display: none;">
+            <div class="verification-success">
+                <i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                <h3>Transfert Trouvé !</h3>
+                <p>Votre transfert a été vérifié avec succès</p>
+            </div>
+
+            <div class="grid">
+                <!-- Détails du transfert -->
+                <div class="transaction-details">
+                    <h3 style="margin-bottom: 20px; color: var(--dark);">
+                        <i class="fas fa-info-circle"></i> Détails du Transfert
+                    </h3>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Numéro de transaction:</span>
+                        <span class="detail-value" id="detail-id">-</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Date d'envoi:</span>
+                        <span class="detail-value" id="detail-date">-</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Expéditeur:</span>
+                        <span class="detail-value" id="detail-sender">-</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Destinataire:</span>
+                        <span class="detail-value" id="detail-receiver">-</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Direction:</span>
+                        <span class="detail-value" id="detail-direction">-</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Statut:</span>
+                        <span class="detail-value">
+                            <span id="detail-status" class="status-badge status-pending">-</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Montant et confirmation -->
+                <div class="transaction-details">
+                    <h3 style="margin-bottom: 20px; color: var(--dark);">
+                        <i class="fas fa-money-bill-wave"></i> Montant à Recevoir
+                    </h3>
+                    
+                    <div class="amount-highlight">
+                        <div id="detail-amount-sent">-</div>
+                        <div style="font-size: 14px; margin-top: 5px; color: #666;">Montant envoyé</div>
+                    </div>
+                    
+                    <div class="amount-highlight" style="border-color: var(--secondary);">
+                        <div id="detail-amount-receive">-</div>
+                        <div style="font-size: 14px; margin-top: 5px; color: #666;">Montant à recevoir</div>
+                    </div>
+
+                    <!-- Formulaire de confirmation de réception -->
+                    <div id="receive-form" style="display: none; margin-top: 20px;">
+                        <h4 style="margin-bottom: 15px; color: var(--dark);">
+                            <i class="fas fa-check-circle"></i> Confirmer la Réception
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="receiver-confirm-id">Votre pièce d'identité</label>
+                            <input type="text" id="receiver-confirm-id" required placeholder="Numéro de carte d'identité ou passeport">
+                            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                                Doit correspondre au numéro fourni par l'expéditeur
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="receiver-confirm-phone">Votre téléphone</label>
+                            <input type="tel" id="receiver-confirm-phone" required placeholder="Votre numéro de téléphone">
+                            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                                Doit correspondre au numéro fourni par l'expéditeur
+                            </small>
+                        </div>
+                        
+                        <button type="button" id="confirm-receive-btn" class="btn-success" style="width: 100%;">
+                            <i class="fas fa-check"></i> Confirmer la Réception
+                        </button>
+                    </div>
+
+                    <!-- Message si déjà reçu -->
+                    <div id="already-received" style="display: none; text-align: center; padding: 20px; background: #e8f5e8; border-radius: 10px;">
+                        <i class="fas fa-check-circle" style="color: var(--secondary); font-size: 32px; margin-bottom: 10px;"></i>
+                        <h4 style="color: var(--secondary);">Transfert Déjà Reçu</h4>
+                        <p style="color: #666; margin-top: 10px;">Ce transfert a été récupéré le <span id="received-date">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si aucun transfert trouvé -->
+        <div id="no-result" style="display: none; text-align: center; padding: 40px;">
+            <i class="fas fa-search" style="font-size: 64px; color: #bdc3c7; margin-bottom: 20px;"></i>
+            <h3 style="color: #7f8c8d;">Aucun transfert trouvé</h3>
+            <p style="color: #95a5a6;">Vérifiez le numéro de transaction et votre nom</p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-text">Message de notification</span>
+    </div>
 
     <script>
         // Éléments DOM
@@ -73,6 +541,11 @@
             const name = document.getElementById('receiver-name').value.trim();
             const transactionId = document.getElementById('transaction-id').value.trim().toUpperCase();
 
+            if (!name || !transactionId) {
+                showNotification('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
             // Animation du bouton
             const submitBtn = verificationForm.querySelector('button');
             const originalText = submitBtn.innerHTML;
@@ -96,6 +569,8 @@
             try {
                 const { db, collection, getDocs, query, where } = window.firebase;
                 
+                console.log("Recherche transaction:", transactionId, "pour destinataire:", receiverName);
+                
                 // Recherche dans Firebase
                 const transactionsQuery = query(
                     collection(db, "transactions"),
@@ -107,6 +582,8 @@
                 if (!querySnapshot.empty) {
                     const transactionDoc = querySnapshot.docs[0];
                     const transaction = { id: transactionDoc.id, ...transactionDoc.data() };
+                    
+                    console.log("Transaction trouvée:", transaction);
                     
                     // Vérifier le nom du destinataire
                     const cleanReceiverName = receiverName.toLowerCase().trim();
@@ -143,6 +620,8 @@
 
         // Afficher les détails de la transaction
         function displayTransactionDetails(transaction) {
+            console.log("Affichage détails transaction:", transaction);
+            
             // Mettre à jour les détails
             document.getElementById('detail-id').textContent = transaction.id;
             document.getElementById('detail-date').textContent = formatDate(transaction.date);
@@ -196,6 +675,13 @@
                 const originalId = currentTransaction.receiver.id;
                 const originalPhone = currentTransaction.receiver.phone;
                 
+                console.log('Vérification identifiants:', {
+                    providedId: idNumber,
+                    originalId: originalId,
+                    providedPhone: phone,
+                    originalPhone: originalPhone
+                });
+
                 if (idNumber !== originalId) {
                     showNotification('Le numéro d\'identité ne correspond pas à celui enregistré par l\'expéditeur', 'error');
                     return;
@@ -214,6 +700,8 @@
 
             try {
                 const { db, doc, updateDoc } = window.firebase;
+                
+                console.log("Mise à jour transaction:", transactionId);
                 
                 // Mettre à jour la transaction dans Firebase
                 await updateDoc(doc(db, "transactions", transactionId), {
@@ -240,7 +728,7 @@
                 
             } catch (error) {
                 console.error('Erreur confirmation réception:', error);
-                showNotification('Erreur lors de la confirmation', 'error');
+                showNotification('Erreur lors de la confirmation de réception', 'error');
             } finally {
                 // Réactiver le bouton
                 confirmReceiveBtn.innerHTML = originalText;
@@ -250,6 +738,8 @@
 
         // Envoyer une confirmation SMS (simulé)
         function sendConfirmationSMS(transaction) {
+            const direction = transaction.transferType === 'RD_HAITI' ? 'République Dominicaine vers Haïti' : 'Haïti vers République Dominicaine';
+            
             console.log(`SMS envoyé à ${transaction.sender.phone}: 
             Bonne nouvelle! ${transaction.receiver.name} a récupéré le transfert de ${transaction.amount} ${transaction.currencyFrom}. 
             Transaction #${transaction.id} est maintenant complétée.`);
@@ -270,8 +760,12 @@
 
         // Fonctions utilitaires
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+            } catch (error) {
+                return dateString;
+            }
         }
 
         function getStatusText(status) {
@@ -285,7 +779,10 @@
 
         // Vérification automatique si des données pré-remplies existent
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("Page réception chargée");
+            
             if (receiverName && transactionToCheck) {
+                console.log("Données pré-remplies trouvées:", { receiverName, transactionToCheck });
                 // Lancer automatiquement la vérification
                 setTimeout(() => {
                     verifyTransaction(receiverName, transactionToCheck);
@@ -295,6 +792,12 @@
                     sessionStorage.removeItem('transactionToCheck');
                 }, 500);
             }
+        });
+
+        // Gestion des erreurs globales
+        window.addEventListener('error', (event) => {
+            console.error('Erreur globale:', event.error);
+            showNotification('Une erreur est survenue', 'error');
         });
     </script>
 </body>
