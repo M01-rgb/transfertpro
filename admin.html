@@ -5,7 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TransfertPro - Administrateur</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIg0_eVtvt9eG0GnUheiFBFVJlC03ht4E",
+            authDomain: "transfertpro-18a3e.firebaseapp.com",
+            projectId: "transfertpro-18a3e",
+            storageBucket: "transfertpro-18a3e.firebasestorage.app",
+            messagingSenderId: "762619692633",
+            appId: "1:762619692633:web:49d265ca2179845a831348"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.firebase = {
+            db,
+            collection,
+            getDocs,
+            addDoc,
+            doc,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            query,
+            where,
+            orderBy
+        };
+    </script>
     <style>
+        /* Le CSS reste exactement le même que votre fichier original */
         :root {
             --primary: #3498db;
             --secondary: #2ecc71;
@@ -472,7 +504,6 @@
                         </div>
                     </div>
                     
-                    <!-- AJOUT : Adresse et téléphone du travailleur -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="worker-address">Adresse du travailleur</label>
@@ -610,8 +641,8 @@
                     <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px; border-left: 4px solid var(--primary);">
                         <strong>💡 Information Système:</strong>
                         <p style="margin: 10px 0 0 0; color: #666; font-size: 14px; line-height: 1.5;">
-                            Ce système fonctionne en mode démonstration avec stockage local des données.<br>
-                            Toutes les informations sont sauvegardées dans le navigateur et persistent pendant la session.
+                            Ce système fonctionne maintenant avec Firebase pour la synchronisation en temps réel.<br>
+                            Toutes les données sont synchronisées entre tous les appareils connectés.
                         </p>
                     </div>
                 </div>
@@ -632,42 +663,13 @@
         }
 
         // Données
-        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-        
-        // CORRECTION : Initialisation des travailleurs
-        let workers = JSON.parse(localStorage.getItem('workers')) || [];
-        if (workers.length === 0) {
-            workers = [
-                { 
-                    name: "Jean Pierre", 
-                    code: "TRV001", 
-                    address: "Bureau Principal - Av. John F. Kennedy, Santo Domingo",
-                    phone: "+1 809 123 4567",
-                    transactions: 0 
-                },
-                { 
-                    name: "Marie Laurent", 
-                    code: "TRV002", 
-                    address: "Bureau Centre-Ville - Rue du Commerce, Port-au-Prince",
-                    phone: "+1 809 123 4568",
-                    transactions: 0 
-                },
-                { 
-                    name: "Carlos Rodriguez", 
-                    code: "TRV003", 
-                    address: "Bureau Ouest - Av. des Héros, Santiago",
-                    phone: "+1 809 123 4569",
-                    transactions: 0 
-                }
-            ];
-            localStorage.setItem('workers', JSON.stringify(workers));
-        }
-        
-        let officeInfo = JSON.parse(localStorage.getItem('officeInfo')) || {
+        let transactions = [];
+        let workers = [];
+        let officeInfo = {
             address: "Av. John F. Kennedy, Santo Domingo",
             phone: "+1 809 123 4567"
         };
-        let exchangeRates = JSON.parse(localStorage.getItem('exchangeRates')) || {
+        let exchangeRates = {
             USD_HTG: 120,
             USD_DOP: 56,
             DOP_HTG: 2.14,
@@ -711,115 +713,150 @@
             document.getElementById('total-amount').textContent = `$${totalAmount.toLocaleString('fr-FR')}`;
         }
 
-        // Charger les transactions
-        function loadTransactions() {
-            const tbody = document.getElementById('transactions-table').querySelector('tbody');
-            tbody.innerHTML = '';
+        // Charger les transactions depuis Firebase
+        async function loadTransactions() {
+            try {
+                const { db, collection, getDocs, orderBy } = window.firebase;
+                const querySnapshot = await getDocs(collection(db, "transactions"));
+                
+                transactions = [];
+                querySnapshot.forEach((doc) => {
+                    transactions.push({ id: doc.id, ...doc.data() });
+                });
 
-            if (transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Aucune transaction</td></tr>';
-                return;
+                // Trier par date
+                transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                const tbody = document.getElementById('transactions-table').querySelector('tbody');
+                tbody.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Aucune transaction</td></tr>';
+                    return;
+                }
+
+                transactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    const direction = transaction.transferType === 'RD_HAITI' ? '🇩🇴→🇭🇹' : '🇭🇹→🇩🇴';
+                    
+                    row.innerHTML = `
+                        <td>${transaction.id}</td>
+                        <td>${transaction.sender.name} ${transaction.sender.surname}</td>
+                        <td>${transaction.receiver.name} ${transaction.receiver.surname}</td>
+                        <td>${transaction.amount} ${transaction.currencyFrom} ${direction} ${transaction.convertedAmount} ${transaction.currencyTo}</td>
+                        <td>${formatDate(transaction.date)}</td>
+                        <td>${transaction.workerCode}</td>
+                        <td><span class="status-badge status-${transaction.status}">${getStatusText(transaction.status)}</span></td>
+                        <td>
+                            <button class="btn btn-primary view-details" data-id="${transaction.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${transaction.status === 'pending' ? 
+                                `<button class="btn btn-danger cancel-transaction" data-id="${transaction.id}">
+                                    <i class="fas fa-times"></i>
+                                </button>` : ''
+                            }
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+
+                // Événements
+                document.querySelectorAll('.view-details').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const transactionId = btn.dataset.id;
+                        viewTransactionDetails(transactionId);
+                    });
+                });
+
+                document.querySelectorAll('.cancel-transaction').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const transactionId = btn.dataset.id;
+                        cancelTransaction(transactionId);
+                    });
+                });
+
+                // Recherche
+                document.getElementById('search-transactions').addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const rows = tbody.querySelectorAll('tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+
+                loadStats();
+            } catch (error) {
+                console.error('Erreur chargement transactions:', error);
+                showNotification('Erreur de chargement des transactions', 'error');
             }
-
-            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(transaction => {
-                const row = document.createElement('tr');
-                const direction = transaction.transferType === 'RD_HAITI' ? '🇩🇴→🇭🇹' : '🇭🇹→🇩🇴';
-                
-                row.innerHTML = `
-                    <td>${transaction.id}</td>
-                    <td>${transaction.sender.name} ${transaction.sender.surname}</td>
-                    <td>${transaction.receiver.name} ${transaction.receiver.surname}</td>
-                    <td>${transaction.amount} ${transaction.currencyFrom} ${direction} ${transaction.convertedAmount} ${transaction.currencyTo}</td>
-                    <td>${formatDate(transaction.date)}</td>
-                    <td>${transaction.workerCode}</td>
-                    <td><span class="status-badge status-${transaction.status}">${getStatusText(transaction.status)}</span></td>
-                    <td>
-                        <button class="btn btn-primary view-details" data-id="${transaction.id}">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        ${transaction.status === 'pending' ? 
-                            `<button class="btn btn-danger cancel-transaction" data-id="${transaction.id}">
-                                <i class="fas fa-times"></i>
-                            </button>` : ''
-                        }
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-
-            // Événements
-            document.querySelectorAll('.view-details').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const transactionId = btn.dataset.id;
-                    viewTransactionDetails(transactionId);
-                });
-            });
-
-            document.querySelectorAll('.cancel-transaction').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const transactionId = btn.dataset.id;
-                    cancelTransaction(transactionId);
-                });
-            });
-
-            // Recherche
-            document.getElementById('search-transactions').addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const rows = tbody.querySelectorAll('tr');
-                
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            });
         }
 
-        // CORRECTION : Charger les travailleurs
-        function loadWorkers() {
-            const tbody = document.getElementById('workers-table').querySelector('tbody');
-            tbody.innerHTML = '';
-
-            // CORRECTION : Toujours charger depuis le localStorage
-            const currentWorkers = JSON.parse(localStorage.getItem('workers')) || [];
-
-            if (currentWorkers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Aucun travailleur</td></tr>';
-                return;
-            }
-
-            currentWorkers.forEach(worker => {
-                const workerTransactions = transactions.filter(t => t.workerCode === worker.code).length;
-                const row = document.createElement('tr');
+        // Charger les travailleurs depuis Firebase
+        async function loadWorkers() {
+            try {
+                const { db, collection, getDocs } = window.firebase;
+                const querySnapshot = await getDocs(collection(db, "workers"));
                 
-                // AJOUT : Affichage de l'adresse et téléphone
-                row.innerHTML = `
-                    <td>${worker.name}</td>
-                    <td>${worker.code}</td>
-                    <td>${worker.address || 'Non défini'}</td>
-                    <td>${worker.phone || 'Non défini'}</td>
-                    <td>${workerTransactions}</td>
-                    <td>
-                        <button class="btn btn-danger delete-worker" data-code="${worker.code}">
-                            <i class="fas fa-trash"></i> Supprimer
-                        </button>
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-
-            // Événements
-            document.querySelectorAll('.delete-worker').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const workerCode = btn.dataset.code;
-                    deleteWorker(workerCode);
+                workers = [];
+                querySnapshot.forEach((doc) => {
+                    workers.push({ id: doc.id, ...doc.data() });
                 });
-            });
+
+                const tbody = document.getElementById('workers-table').querySelector('tbody');
+                tbody.innerHTML = '';
+
+                if (workers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Aucun travailleur</td></tr>';
+                    return;
+                }
+
+                workers.forEach(worker => {
+                    const workerTransactions = transactions.filter(t => t.workerCode === worker.code).length;
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${worker.name}</td>
+                        <td>${worker.code}</td>
+                        <td>${worker.address || 'Non défini'}</td>
+                        <td>${worker.phone || 'Non défini'}</td>
+                        <td>${workerTransactions}</td>
+                        <td>
+                            <button class="btn btn-danger delete-worker" data-id="${worker.id}" data-code="${worker.code}">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+
+                // Événements
+                document.querySelectorAll('.delete-worker').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const workerId = btn.dataset.id;
+                        const workerCode = btn.dataset.code;
+                        deleteWorker(workerId, workerCode);
+                    });
+                });
+            } catch (error) {
+                console.error('Erreur chargement travailleurs:', error);
+                showNotification('Erreur de chargement des travailleurs', 'error');
+            }
         }
 
         // Charger les paramètres
         function loadSettings() {
+            // Charger depuis localStorage comme fallback
+            const savedOfficeInfo = JSON.parse(localStorage.getItem('officeInfo'));
+            const savedRates = JSON.parse(localStorage.getItem('exchangeRates'));
+            
+            if (savedOfficeInfo) officeInfo = savedOfficeInfo;
+            if (savedRates) exchangeRates = savedRates;
+
             document.getElementById('office-address').value = officeInfo.address;
             document.getElementById('office-phone').value = officeInfo.phone;
             
@@ -829,35 +866,47 @@
             document.getElementById('rate-htg-dop').value = exchangeRates.HTG_DOP;
         }
 
-        // CORRECTION : Formulaire travailleur
-        document.getElementById('worker-form').addEventListener('submit', (e) => {
+        // Ajouter un travailleur dans Firebase
+        document.getElementById('worker-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('worker-name').value.trim();
             const code = document.getElementById('worker-code').value.trim().toUpperCase();
             const address = document.getElementById('worker-address').value.trim();
             const phone = document.getElementById('worker-phone').value.trim();
 
-            // Vérifier si le code existe déjà
-            if (workers.find(w => w.code === code)) {
-                showNotification('Ce code travailleur existe déjà', 'error');
-                return;
-            }
+            try {
+                const { db, collection, addDoc, getDocs, query, where } = window.firebase;
+                
+                // Vérifier si le code existe déjà
+                const existingQuery = query(
+                    collection(db, "workers"),
+                    where("code", "==", code)
+                );
+                const existingSnapshot = await getDocs(existingQuery);
+                
+                if (!existingSnapshot.empty) {
+                    showNotification('Ce code travailleur existe déjà', 'error');
+                    return;
+                }
 
-            // AJOUT : Structure complète du travailleur
-            const newWorker = {
-                name: name,
-                code: code,
-                address: address,
-                phone: phone,
-                transactions: 0
-            };
-            
-            workers.push(newWorker);
-            localStorage.setItem('workers', JSON.stringify(workers));
-            
-            showNotification('Travailleur ajouté avec succès', 'success');
-            loadWorkers();
-            e.target.reset();
+                const newWorker = {
+                    name: name,
+                    code: code,
+                    address: address,
+                    phone: phone,
+                    transactions: 0,
+                    createdAt: new Date().toISOString()
+                };
+                
+                await addDoc(collection(db, "workers"), newWorker);
+                
+                showNotification('Travailleur ajouté avec succès', 'success');
+                loadWorkers();
+                e.target.reset();
+            } catch (error) {
+                console.error('Erreur ajout travailleur:', error);
+                showNotification('Erreur lors de l\'ajout du travailleur', 'error');
+            }
         });
 
         // Formulaire paramètres
@@ -900,25 +949,35 @@
             }
         }
 
-        function cancelTransaction(transactionId) {
+        async function cancelTransaction(transactionId) {
             if (confirm('Annuler cette transaction?')) {
-                const transaction = transactions.find(t => t.id === transactionId);
-                if (transaction) {
-                    transaction.status = 'cancelled';
-                    localStorage.setItem('transactions', JSON.stringify(transactions));
-                    loadTransactions();
-                    loadStats();
+                try {
+                    const { db, doc, updateDoc } = window.firebase;
+                    await updateDoc(doc(db, "transactions", transactionId), {
+                        status: 'cancelled'
+                    });
+                    
                     showNotification('Transaction annulée', 'success');
+                    loadTransactions();
+                } catch (error) {
+                    console.error('Erreur annulation transaction:', error);
+                    showNotification('Erreur lors de l\'annulation', 'error');
                 }
             }
         }
 
-        function deleteWorker(workerCode) {
+        async function deleteWorker(workerId, workerCode) {
             if (confirm('Supprimer ce travailleur?')) {
-                workers = workers.filter(w => w.code !== workerCode);
-                localStorage.setItem('workers', JSON.stringify(workers));
-                loadWorkers();
-                showNotification('Travailleur supprimé', 'success');
+                try {
+                    const { db, doc, deleteDoc } = window.firebase;
+                    await deleteDoc(doc(db, "workers", workerId));
+                    
+                    showNotification('Travailleur supprimé', 'success');
+                    loadWorkers();
+                } catch (error) {
+                    console.error('Erreur suppression travailleur:', error);
+                    showNotification('Erreur lors de la suppression', 'error');
+                }
             }
         }
 
@@ -954,11 +1013,33 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
             loadTransactions();
             loadWorkers();
             loadSettings();
+            
+            // Écouter les changements en temps réel
+            setupRealtimeListeners();
         });
+
+        // Écoute en temps réel
+        async function setupRealtimeListeners() {
+            try {
+                const { db, collection, onSnapshot } = window.firebase;
+                
+                // Écouter les transactions
+                onSnapshot(collection(db, "transactions"), (snapshot) => {
+                    loadTransactions();
+                });
+                
+                // Écouter les travailleurs
+                onSnapshot(collection(db, "workers"), (snapshot) => {
+                    loadWorkers();
+                });
+                
+            } catch (error) {
+                console.error('Erreur écoute temps réel:', error);
+            }
+        }
     </script>
 </body>
 </html>
