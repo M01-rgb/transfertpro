@@ -8,7 +8,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCIg0_eVtvt9eG0GnUheiFBFVJlC03ht4E",
@@ -31,17 +31,722 @@
             updateDoc,
             onSnapshot,
             query,
-            where
+            where,
+            orderBy
         };
     </script>
     <style>
-        /* Le CSS reste exactement le même que votre fichier original */
-        /* ... Votre CSS complet ... */
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 32px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .welcome-text {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .transaction-item {
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .transaction-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .transaction-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .transaction-id {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .transaction-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .receipt {
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 25px;
+            border: 2px dashed #ccc;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .receipt-header h2 {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .receipt-details {
+            margin-bottom: 20px;
+        }
+        
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .receipt-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, var(--secondary), #27ae60);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+        }
+        
+        .office-info {
+            background: linear-gradient(135deg, var(--light), #fff);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            border: 1px solid #e1e5e9;
+        }
+        
+        .office-detail {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .office-detail i {
+            color: var(--primary);
+            font-size: 18px;
+            width: 20px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary);
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .office-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stats-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .currency-display {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .transfer-direction {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .transfer-direction h3 {
+            margin: 0;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
-    <!-- Le HTML reste exactement le même que votre fichier original -->
-    <!-- ... Votre HTML complet ... -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h1>TransfertPro - Travailleur</h1>
+                </div>
+                <div class="user-info">
+                    <div class="welcome-text">
+                        <span id="current-worker">Bienvenue, </span>
+                    </div>
+                    <button class="logout-btn" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Informations du bureau -->
+        <div class="office-info">
+            <div class="office-detail">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="current-date">Date: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-clock"></i>
+                <span id="current-time">Heure: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="office-address">Bureau: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-phone"></i>
+                <span id="office-phone">Téléphone: Chargement...</span>
+            </div>
+            <div class="office-detail">
+                <i class="fas fa-id-badge"></i>
+                <span id="worker-code-display">Code: Chargement...</span>
+            </div>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="grid">
+            <div class="stats-card">
+                <div class="stats-value" id="today-transactions">0</div>
+                <div class="stats-label">Transferts Aujourd'hui</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-value" id="pending-transactions">0</div>
+                <div class="stats-label">En Attente</div>
+            </div>
+        </div>
+
+        <!-- Formulaire de transfert -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-paper-plane"></i>
+                    Nouveau Transfert
+                </h2>
+            </div>
+            <form id="transaction-form">
+                <!-- Direction du transfert -->
+                <div class="transfer-direction">
+                    <h3 id="transfer-direction-text">Sélectionnez la direction du transfert</h3>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transfer-type">Type de transfert</label>
+                        <select id="transfer-type" required>
+                            <option value="">Choisir la direction</option>
+                            <option value="RD_HAITI">République Dominicaine → Haïti</option>
+                            <option value="HAITI_RD">Haïti → République Dominicaine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency-from">Devise d'envoi</label>
+                        <select id="currency-from" required>
+                            <option value="">Choisir la devise</option>
+                            <option value="USD">Dollars américains ($)</option>
+                            <option value="DOP">Pesos dominicains (DOP)</option>
+                            <option value="HTG">Gourdes haïtiennes (HTG)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Informations de l'Expéditeur</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sender-name">Nom</label>
+                        <input type="text" id="sender-name" required placeholder="Nom de l'expéditeur">
+                    </div>
+                    <div class="form-group">
+                        <label for="sender-surname">Prénom</label>
+                        <input type="text" id="sender-surname" required placeholder="Prénom de l'expéditeur">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sender-id">Carte d'identité / Passeport</label>
+                        <input type="text" id="sender-id" required placeholder="Numéro d'identification">
+                    </div>
+                    <div class="form-group">
+                        <label for="sender-phone">Téléphone</label>
+                        <input type="tel" id="sender-phone" required placeholder="Numéro de téléphone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sender-address">Adresse</label>
+                    <input type="text" id="sender-address" required placeholder="Adresse complète">
+                </div>
+                
+                <h3 class="section-title">Informations du Destinataire</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="receiver-name">Nom</label>
+                        <input type="text" id="receiver-name" required placeholder="Nom du destinataire">
+                    </div>
+                    <div class="form-group">
+                        <label for="receiver-surname">Prénom</label>
+                        <input type="text" id="receiver-surname" required placeholder="Prénom du destinataire">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="receiver-id">Carte d'identité / Passeport</label>
+                        <input type="text" id="receiver-id" required placeholder="Numéro d'identification">
+                    </div>
+                    <div class="form-group">
+                        <label for="receiver-phone">Téléphone</label>
+                        <input type="tel" id="receiver-phone" required placeholder="Numéro de téléphone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="receiver-address">Adresse du destinataire</label>
+                    <input type="text" id="receiver-address" required placeholder="Adresse complète">
+                </div>
+                
+                <h3 class="section-title">Détails du Transfert</h3>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label for="amount">Montant à envoyer</label>
+                        <input type="number" id="amount" min="1" step="0.01" required placeholder="Montant">
+                    </div>
+                    <div class="form-group">
+                        <label for="exchange-rate">Taux de change</label>
+                        <input type="number" id="exchange-rate" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency-to">Devise de réception</label>
+                        <select id="currency-to" required>
+                            <option value="">Choisir la devise</option>
+                            <option value="USD">Dollars américains ($)</option>
+                            <option value="DOP">Pesos dominicains (DOP)</option>
+                            <option value="HTG">Gourdes haïtiennes (HTG)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Affichage du montant converti -->
+                <div id="conversion-display" class="currency-display" style="display: none;">
+                    <strong>Montant à recevoir: <span id="converted-amount">0</span> <span id="target-currency"></span></strong>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes (optionnel)</label>
+                    <textarea id="notes" rows="3" placeholder="Notes supplémentaires..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-check"></i> Confirmer le Transfert
+                </button>
+            </form>
+        </div>
+        
+        <!-- Transactions récentes -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Transferts Récents
+                </h2>
+            </div>
+            <div id="recent-transactions" class="grid">
+                <!-- Les transactions récentes seront affichées ici -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Reçu -->
+    <div id="receipt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div class="receipt">
+            <div class="receipt-header">
+                <h2>Reçu de Transfert</h2>
+                <p>TransfertPro</p>
+                <p id="receipt-direction">Direction: Chargement...</p>
+                <p id="receipt-office">Bureau: Chargement...</p>
+                <p id="receipt-worker">Travailleur: Chargement...</p>
+            </div>
+            <div class="receipt-details">
+                <div class="receipt-row">
+                    <span>Numéro de transaction:</span>
+                    <span id="receipt-id">TR1234567</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Date et heure:</span>
+                    <span id="receipt-date">01/01/2023 10:30</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Expéditeur:</span>
+                    <span id="receipt-sender">Jean Dupont</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Destinataire:</span>
+                    <span id="receipt-receiver">Marie Joseph</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Montant envoyé:</span>
+                    <span id="receipt-amount">$100</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Montant à recevoir:</span>
+                    <span id="receipt-receive">12,000 HTG</span>
+                </div>
+                <div class="receipt-row">
+                    <span>Direction:</span>
+                    <span id="receipt-transfer-type">RD → Haiti</span>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button id="print-receipt" class="btn-primary">
+                    <i class="fas fa-print"></i> Imprimer
+                </button>
+                <button id="close-receipt" class="btn-success">
+                    <i class="fas fa-check"></i> Terminer
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-text">Message de notification</span>
+    </div>
 
     <script>
         // Vérifier si l'utilisateur est connecté
@@ -53,6 +758,7 @@
         
         if (!currentWorker) {
             window.location.href = 'index.html';
+            throw new Error("Utilisateur non connecté");
         }
         
         // Données
@@ -105,6 +811,8 @@
 
         // Initialisation de la page
         async function initializePage() {
+            console.log("Initialisation de la page travailleur...");
+            
             // Afficher les informations du travailleur
             currentWorkerEl.textContent += currentWorker.name;
             workerCodeDisplayEl.textContent = `Code: ${currentWorker.code}`;
@@ -124,9 +832,11 @@
                     
                     officeAddressEl.textContent = `Bureau: ${workerData.address || officeInfo.address}`;
                     officePhoneEl.textContent = `Téléphone: ${workerData.phone || officeInfo.phone}`;
+                    console.log("Informations travailleur chargées:", workerData);
                 } else {
                     officeAddressEl.textContent = `Bureau: ${officeInfo.address}`;
                     officePhoneEl.textContent = `Téléphone: ${officeInfo.phone}`;
+                    console.log("Travailleur non trouvé dans Firebase, utilisation des valeurs par défaut");
                 }
             } catch (error) {
                 console.error('Erreur chargement info travailleur:', error);
@@ -139,7 +849,7 @@
             setInterval(updateDateTime, 1000);
             
             // Charger les données
-            loadRecentTransactions();
+            await loadRecentTransactions();
             updateStats();
             
             // Événements pour les sélecteurs
@@ -148,6 +858,8 @@
             currencyToSelect.addEventListener('change', updateExchangeRate);
             amountInput.addEventListener('input', calculateConversion);
             exchangeRateInput.addEventListener('input', calculateConversion);
+
+            console.log("Page travailleur initialisée avec succès");
         }
 
         // Mettre à jour la direction du transfert
@@ -333,6 +1045,8 @@
                     officePhone: officeInfo.phone
                 };
 
+                console.log("Création de transaction:", transaction);
+
                 // Sauvegarder dans Firebase
                 const { db, collection, addDoc } = window.firebase;
                 await addDoc(collection(db, "transactions"), transaction);
@@ -346,7 +1060,7 @@
                 updateTransferDirection();
                 
                 // Mettre à jour l'affichage
-                loadRecentTransactions();
+                await loadRecentTransactions();
                 updateStats();
                 
                 // Afficher une notification
@@ -381,6 +1095,8 @@
                 querySnapshot.forEach((doc) => {
                     transactions.push({ id: doc.id, ...doc.data() });
                 });
+
+                console.log("Transactions chargées:", transactions.length);
 
                 recentTransactionsEl.innerHTML = '';
                 
@@ -523,6 +1239,7 @@
                 );
                 
                 onSnapshot(transactionsQuery, (snapshot) => {
+                    console.log("Mise à jour temps réel des transactions");
                     loadRecentTransactions();
                     updateStats();
                 });
@@ -532,9 +1249,16 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePage();
-            setupRealtimeListener();
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOM chargé, initialisation...");
+            try {
+                await initializePage();
+                setupRealtimeListener();
+                console.log("Page travailleur prête");
+            } catch (error) {
+                console.error("Erreur lors de l'initialisation:", error);
+                showNotification("Erreur lors du chargement de la page", "error");
+            }
         });
     </script>
 </body>
