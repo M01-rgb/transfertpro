@@ -581,7 +581,11 @@
                 
                 if (!querySnapshot.empty) {
                     const transactionDoc = querySnapshot.docs[0];
-                    const transaction = { id: transactionDoc.id, ...transactionDoc.data() };
+                    const transaction = { 
+                        id: transactionDoc.data().id,
+                        firebaseId: transactionDoc.id, // Stocker l'ID Firebase
+                        ...transactionDoc.data() 
+                    };
                     
                     console.log("Transaction trouvée:", transaction);
                     
@@ -684,7 +688,7 @@
             }
         }
 
-        // Confirmer la réception avec vérification des identifiants
+        // CORRECTION : Confirmer la réception avec vérification des identifiants
         async function confirmReceipt(transactionId) {
             const idNumber = document.getElementById('receiver-confirm-id').value.trim();
             const phone = document.getElementById('receiver-confirm-phone').value.trim();
@@ -725,6 +729,44 @@
             try {
                 // Vérifier si c'est une transaction Firebase ou fallback
                 if (currentTransaction.firebaseId) {
+                    // CORRECTION : Transaction Firebase - utiliser l'ID Firebase pour la mise à jour
+                    const { db, collection, getDocs, query, where, doc, updateDoc } = window.firebase;
+                    
+                    console.log("🔍 Recherche de la transaction avec ID:", transactionId);
+                    
+                    // Rechercher le document par notre ID personnalisé
+                    const transactionsQuery = query(
+                        collection(db, "transactions"),
+                        where("id", "==", transactionId)
+                    );
+                    
+                    const querySnapshot = await getDocs(transactionsQuery);
+                    
+                    if (querySnapshot.empty) {
+                        throw new Error("Transaction non trouvée dans la base de données");
+                    }
+                    
+                    // Récupérer le document Firebase (avec son ID auto-généré)
+                    const transactionDoc = querySnapshot.docs[0];
+                    const firebaseDocId = transactionDoc.id;
+                    
+                    console.log("✅ Document trouvé. ID Firebase:", firebaseDocId);
+                    
+                    // Mettre à jour le document avec l'ID Firebase correct
+                    await updateDoc(doc(db, "transactions", firebaseDocId), {
+                        status: 'completed',
+                        received: true,
+                        receivedDate: new Date().toISOString(),
+                        receiver: {
+                            ...currentTransaction.receiver,
+                            confirmedId: idNumber,
+                            confirmedPhone: phone
+                        }
+                    });
+                    
+                    console.log("✅ Transaction mise à jour avec succès dans Firebase");
+                    
+                } else {
                     // Transaction fallback - mettre à jour localStorage
                     const fallbackTransactions = JSON.parse(localStorage.getItem('transactions_fallback')) || [];
                     const transactionIndex = fallbackTransactions.findIndex(t => t.id === transactionId);
@@ -739,22 +781,6 @@
                         localStorage.setItem('transactions_fallback', JSON.stringify(fallbackTransactions));
                         currentTransaction = fallbackTransactions[transactionIndex];
                     }
-                } else {
-                    // Transaction Firebase - mettre à jour Firebase
-                    const { db, doc, updateDoc } = window.firebase;
-                    
-                    console.log("Mise à jour transaction Firebase:", transactionId);
-                    
-                    await updateDoc(doc(db, "transactions", transactionId), {
-                        status: 'completed',
-                        received: true,
-                        receivedDate: new Date().toISOString(),
-                        receiver: {
-                            ...currentTransaction.receiver,
-                            confirmedId: idNumber,
-                            confirmedPhone: phone
-                        }
-                    });
                 }
                 
                 // Mettre à jour l'affichage
@@ -769,8 +795,8 @@
                 sendConfirmationSMS(currentTransaction);
                 
             } catch (error) {
-                console.error('Erreur confirmation réception:', error);
-                showNotification('Erreur lors de la confirmation de réception', 'error');
+                console.error('❌ Erreur confirmation réception:', error);
+                showNotification('Erreur lors de la confirmation: ' + error.message, 'error');
             } finally {
                 // Réactiver le bouton
                 confirmReceiveBtn.innerHTML = originalText;
