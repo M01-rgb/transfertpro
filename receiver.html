@@ -608,9 +608,33 @@
                         showNotification('Le nom ne correspond pas au destinataire enregistré', 'error');
                     }
                 } else {
-                    verificationResult.style.display = 'none';
-                    noResult.style.display = 'block';
-                    showNotification('Aucun transfert trouvé avec ce numéro de transaction', 'error');
+                    // Vérifier aussi dans le fallback localStorage
+                    const fallbackTransactions = JSON.parse(localStorage.getItem('transactions_fallback')) || [];
+                    const fallbackTransaction = fallbackTransactions.find(t => t.id === transactionId);
+                    
+                    if (fallbackTransaction) {
+                        const cleanReceiverName = receiverName.toLowerCase().trim();
+                        const storedReceiverName = fallbackTransaction.receiver.name.toLowerCase().trim();
+                        const nameMatches = storedReceiverName === cleanReceiverName || 
+                                           storedReceiverName.includes(cleanReceiverName) ||
+                                           cleanReceiverName.includes(storedReceiverName);
+                        
+                        if (nameMatches) {
+                            currentTransaction = fallbackTransaction;
+                            displayTransactionDetails(fallbackTransaction);
+                            verificationResult.style.display = 'block';
+                            noResult.style.display = 'none';
+                            showNotification('Transfert trouvé (mode hors ligne)!', 'success');
+                        } else {
+                            verificationResult.style.display = 'none';
+                            noResult.style.display = 'block';
+                            showNotification('Le nom ne correspond pas au destinataire enregistré', 'error');
+                        }
+                    } else {
+                        verificationResult.style.display = 'none';
+                        noResult.style.display = 'block';
+                        showNotification('Aucun transfert trouvé avec ce numéro de transaction', 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Erreur vérification transaction:', error);
@@ -699,21 +723,39 @@
             confirmReceiveBtn.disabled = true;
 
             try {
-                const { db, doc, updateDoc } = window.firebase;
-                
-                console.log("Mise à jour transaction:", transactionId);
-                
-                // Mettre à jour la transaction dans Firebase
-                await updateDoc(doc(db, "transactions", transactionId), {
-                    status: 'completed',
-                    received: true,
-                    receivedDate: new Date().toISOString(),
-                    receiver: {
-                        ...currentTransaction.receiver,
-                        confirmedId: idNumber,
-                        confirmedPhone: phone
+                // Vérifier si c'est une transaction Firebase ou fallback
+                if (currentTransaction.firebaseId) {
+                    // Transaction fallback - mettre à jour localStorage
+                    const fallbackTransactions = JSON.parse(localStorage.getItem('transactions_fallback')) || [];
+                    const transactionIndex = fallbackTransactions.findIndex(t => t.id === transactionId);
+                    
+                    if (transactionIndex !== -1) {
+                        fallbackTransactions[transactionIndex].status = 'completed';
+                        fallbackTransactions[transactionIndex].received = true;
+                        fallbackTransactions[transactionIndex].receivedDate = new Date().toISOString();
+                        fallbackTransactions[transactionIndex].receiver.confirmedId = idNumber;
+                        fallbackTransactions[transactionIndex].receiver.confirmedPhone = phone;
+                        
+                        localStorage.setItem('transactions_fallback', JSON.stringify(fallbackTransactions));
+                        currentTransaction = fallbackTransactions[transactionIndex];
                     }
-                });
+                } else {
+                    // Transaction Firebase - mettre à jour Firebase
+                    const { db, doc, updateDoc } = window.firebase;
+                    
+                    console.log("Mise à jour transaction Firebase:", transactionId);
+                    
+                    await updateDoc(doc(db, "transactions", transactionId), {
+                        status: 'completed',
+                        received: true,
+                        receivedDate: new Date().toISOString(),
+                        receiver: {
+                            ...currentTransaction.receiver,
+                            confirmedId: idNumber,
+                            confirmedPhone: phone
+                        }
+                    });
+                }
                 
                 // Mettre à jour l'affichage
                 currentTransaction.status = 'completed';
