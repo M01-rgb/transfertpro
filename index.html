@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TransfertPro - Connexion</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIg0_eVtvt9eG0GnUheiFBFVJlC03ht4E",
+            authDomain: "transfertpro-18a3e.firebaseapp.com",
+            projectId: "transfertpro-18a3e",
+            storageBucket: "transfertpro-18a3e.firebasestorage.app",
+            messagingSenderId: "762619692633",
+            appId: "1:762619692633:web:49d265ca2179845a831348"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Exposer Firebase aux autres scripts
+        window.firebase = {
+            db,
+            collection,
+            getDocs,
+            addDoc,
+            doc,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            query,
+            where
+        };
+
+        console.log("Firebase initialisé avec succès!");
+    </script>
     <style>
         :root {
             --primary: #3498db;
@@ -302,39 +335,49 @@
             });
         });
 
-        // CORRECTION : Connexion travailleur - Chargement depuis localStorage
-        document.getElementById('worker-login-form').addEventListener('submit', (e) => {
+        // Connexion travailleur avec Firebase
+        document.getElementById('worker-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('worker-name').value.trim();
             const code = document.getElementById('worker-code').value.trim().toUpperCase();
             
-            // CORRECTION : Charger les travailleurs depuis le localStorage
-            const workersFromStorage = JSON.parse(localStorage.getItem('workers')) || [];
-            
-            console.log('Tentative de connexion:', { name, code });
-            console.log('Travailleurs disponibles:', workersFromStorage);
-            
-            // CORRECTION : Recherche améliorée
-            const worker = workersFromStorage.find(w => 
-                w.code === code && 
-                w.name.toLowerCase().includes(name.toLowerCase())
-            );
-            
-            if (worker) {
-                sessionStorage.setItem('currentWorker', JSON.stringify({
-                    name: worker.name,
-                    code: worker.code
-                }));
-                sessionStorage.setItem('userType', 'worker');
-                showNotification(`Connexion réussie! Bienvenue ${worker.name}`, 'success');
+            try {
+                const { db, collection, getDocs, query, where } = window.firebase;
                 
-                // Petit délai pour voir la notification
-                setTimeout(() => {
-                    window.location.href = 'worker-dashboard.html';
-                }, 1000);
-            } else {
-                console.log('Échec connexion - Code:', code, 'Nom:', name);
-                showNotification('Code travailleur ou nom incorrect', 'error');
+                // Rechercher le travailleur dans Firebase
+                const workersQuery = query(
+                    collection(db, "workers"),
+                    where("code", "==", code)
+                );
+                
+                const querySnapshot = await getDocs(workersQuery);
+                
+                if (!querySnapshot.empty) {
+                    const workerDoc = querySnapshot.docs[0];
+                    const worker = workerDoc.data();
+                    
+                    // Vérifier si le nom correspond
+                    if (worker.name.toLowerCase().includes(name.toLowerCase())) {
+                        sessionStorage.setItem('currentWorker', JSON.stringify({
+                            name: worker.name,
+                            code: worker.code,
+                            id: workerDoc.id
+                        }));
+                        sessionStorage.setItem('userType', 'worker');
+                        showNotification(`Connexion réussie! Bienvenue ${worker.name}`, 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'worker-dashboard.html';
+                        }, 1000);
+                    } else {
+                        showNotification('Nom ne correspond pas au code travailleur', 'error');
+                    }
+                } else {
+                    showNotification('Code travailleur incorrect', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                showNotification('Erreur de connexion au serveur', 'error');
             }
         });
 
@@ -379,35 +422,50 @@
             }, 4000);
         }
 
-        // Initialisation des travailleurs par défaut si nécessaire
-        document.addEventListener('DOMContentLoaded', () => {
-            const workers = JSON.parse(localStorage.getItem('workers')) || [];
-            if (workers.length === 0) {
-                const defaultWorkers = [
-                    { 
-                        name: "Jean Pierre", 
-                        code: "TRV001", 
-                        address: "Bureau Principal - Av. John F. Kennedy, Santo Domingo",
-                        phone: "+1 809 123 4567",
-                        transactions: 0 
-                    },
-                    { 
-                        name: "Marie Laurent", 
-                        code: "TRV002", 
-                        address: "Bureau Centre-Ville - Rue du Commerce, Port-au-Prince",
-                        phone: "+1 809 123 4568",
-                        transactions: 0 
-                    },
-                    { 
-                        name: "Carlos Rodriguez", 
-                        code: "TRV003", 
-                        address: "Bureau Ouest - Av. des Héros, Santiago",
-                        phone: "+1 809 123 4569",
-                        transactions: 0 
+        // Initialisation des travailleurs par défaut dans Firebase
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const { db, collection, getDocs, addDoc } = window.firebase;
+                
+                // Vérifier s'il y a des travailleurs dans Firebase
+                const querySnapshot = await getDocs(collection(db, "workers"));
+                
+                if (querySnapshot.empty) {
+                    // Ajouter les travailleurs par défaut
+                    const defaultWorkers = [
+                        { 
+                            name: "Jean Pierre", 
+                            code: "TRV001", 
+                            address: "Bureau Principal - Av. John F. Kennedy, Santo Domingo",
+                            phone: "+1 809 123 4567",
+                            transactions: 0,
+                            createdAt: new Date().toISOString()
+                        },
+                        { 
+                            name: "Marie Laurent", 
+                            code: "TRV002", 
+                            address: "Bureau Centre-Ville - Rue du Commerce, Port-au-Prince",
+                            phone: "+1 809 123 4568",
+                            transactions: 0,
+                            createdAt: new Date().toISOString()
+                        },
+                        { 
+                            name: "Carlos Rodriguez", 
+                            code: "TRV003", 
+                            address: "Bureau Ouest - Av. des Héros, Santiago",
+                            phone: "+1 809 123 4569",
+                            transactions: 0,
+                            createdAt: new Date().toISOString()
+                        }
+                    ];
+                    
+                    for (const worker of defaultWorkers) {
+                        await addDoc(collection(db, "workers"), worker);
                     }
-                ];
-                localStorage.setItem('workers', JSON.stringify(defaultWorkers));
-                console.log('Travailleurs par défaut initialisés');
+                    console.log('Travailleurs par défaut initialisés dans Firebase');
+                }
+            } catch (error) {
+                console.error('Erreur initialisation Firebase:', error);
             }
         });
     </script>
